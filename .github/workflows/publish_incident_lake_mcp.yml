@@ -1,0 +1,84 @@
+name: Publish Incident Lake MCP Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "package.json"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version-changed: ${{ steps.version-check.outputs.version-changed }}
+      new-version: ${{ steps.version-check.outputs.new-version }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if version changed
+        id: version-check
+        run: |
+          # Get current version
+          CURRENT_VERSION=$(node -p "require('./package.json').version")
+
+          # Check if this is a push event and package.json was modified
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Get the list of changed files in this push
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.event.after }})
+            echo "Changed files: $CHANGED_FILES"
+
+            # Check if package.json was changed
+            if echo "$CHANGED_FILES" | grep -q "package.json"; then
+              echo "package.json was modified in this push"
+
+              # Get previous version from the previous commit
+              PREVIOUS_VERSION=$(git show ${{ github.event.before }}:package.json | node -p "JSON.parse(require('fs').readFileSync('/dev/stdin', 'utf8')).version" 2>/dev/null || echo "0.0.0")
+
+              echo "Previous version: $PREVIOUS_VERSION"
+              echo "Current version: $CURRENT_VERSION"
+
+              if [ "$CURRENT_VERSION" != "$PREVIOUS_VERSION" ]; then
+                echo "version-changed=true" >> $GITHUB_OUTPUT
+                echo "new-version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+                echo "Version changed from $PREVIOUS_VERSION to $CURRENT_VERSION"
+              else
+                echo "version-changed=false" >> $GITHUB_OUTPUT
+                echo "Version unchanged: $CURRENT_VERSION"
+              fi
+            else
+              echo "package.json was not modified, skipping publish"
+              echo "version-changed=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "This is not a push event, skipping version check"
+            echo "version-changed=false" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-publish:
+    needs: check-version
+    if: needs.check-version.outputs.version-changed == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://npm.pkg.github.com"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Publish to GitHub Packages
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.ORG_SHARED_GITHUB_PAT }}
