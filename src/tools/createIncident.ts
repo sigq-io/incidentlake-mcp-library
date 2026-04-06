@@ -43,15 +43,23 @@ export function registerCreateIncident(server: McpServer) {
       inputSchema,
     },
     async (input) => {
-      const body: Record<string, unknown> = { name: input.name };
-      if (input.summary) body.summary = input.summary;
-      if (input.status) body.status = input.status;
-      if (input.severity) body.severity = input.severity;
-      if (input.occurredAt) body.occurredAt = input.occurredAt;
-      if (input.detectedAt) body.detectedAt = input.detectedAt;
+      try {
+        const body: Record<string, unknown> = { name: input.name };
+        if (input.summary) body.summary = input.summary;
+        if (input.status) body.status = input.status;
+        if (input.severity) body.severity = input.severity;
+        if (input.occurredAt) body.occurredAt = input.occurredAt;
+        if (input.detectedAt) body.detectedAt = input.detectedAt;
 
-      const data = await api.createIncident(body);
-      return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+        const data = await api.createIncident(body);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return {
+          content: [{ type: 'text' as const, text: `Error creating incident: ${errorMessage}` }],
+          isError: true,
+        };
+      }
     },
   );
 }
