@@ -34,11 +34,19 @@ export function registerAddIncidentNote(server: McpServer) {
       inputSchema,
     },
     async (input) => {
-      const body: Record<string, unknown> = { content: input.content };
-      if (input.createdBy) body.createdBy = input.createdBy;
+      try {
+        const body: Record<string, unknown> = { content: input.content };
+        if (input.createdBy) body.createdBy = input.createdBy;
 
-      const data = await api.addIncidentNote(input.incidentId, body);
-      return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+        const data = await api.addIncidentNote(input.incidentId, body);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return {
+          content: [{ type: 'text' as const, text: `Error adding incident note: ${errorMessage}` }],
+          isError: true,
+        };
+      }
     },
   );
 }

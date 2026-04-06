@@ -55,17 +55,25 @@ export function registerListIncidents(server: McpServer) {
       inputSchema,
     },
     async (input) => {
-      const params = new URLSearchParams();
-      if (input.status) params.set('status', input.status);
-      if (input.severity) params.set('severity', String(input.severity));
-      if (input.declareSource) params.set('declareSource', input.declareSource);
-      if (input.sortBy) params.set('sortBy', input.sortBy);
-      if (input.sortDir) params.set('sortDir', input.sortDir);
-      if (input.limit) params.set('limit', String(input.limit));
-      if (input.cursor) params.set('cursor', input.cursor);
+      try {
+        const params = new URLSearchParams();
+        if (input.status) params.set('status', input.status);
+        if (input.severity) params.set('severity', String(input.severity));
+        if (input.declareSource) params.set('declareSource', input.declareSource);
+        if (input.sortBy) params.set('sortBy', input.sortBy);
+        if (input.sortDir) params.set('sortDir', input.sortDir);
+        if (input.limit) params.set('limit', String(input.limit));
+        if (input.cursor) params.set('cursor', input.cursor);
 
-      const data = await api.listIncidents(params);
-      return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+        const data = await api.listIncidents(params);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return {
+          content: [{ type: 'text' as const, text: `Error listing incidents: ${errorMessage}` }],
+          isError: true,
+        };
+      }
     },
   );
 }

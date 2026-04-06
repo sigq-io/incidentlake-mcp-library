@@ -20,8 +20,16 @@ export function registerSearchIncidents(server: McpServer) {
       }),
     },
     async (input) => {
-      const data = await api.searchIncidents(input.query, input.limit);
-      return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+      try {
+        const data = await api.searchIncidents(input.query, input.limit);
+        return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return {
+          content: [{ type: 'text' as const, text: `Error searching incidents: ${errorMessage}` }],
+          isError: true,
+        };
+      }
     },
   );
 }
