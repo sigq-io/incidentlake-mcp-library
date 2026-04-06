@@ -40,14 +40,14 @@ This will:
 Welcome to Incident Lake MCP setup!
 
 ? Enter your SIGQ API URL (press Enter for default):
-  [https://api.sigq.io/incidentlake/public-api]:
+  [https://api.prod.incidentlake.sigq.io/incidentlake/public-api]:
 ? Enter your API token (starts with sigq_): sigq_xxxx
 
 ? Testing connection... ✓ Connected successfully!
 ✓ Config saved to ~/.sigq/config.json
 ```
 
-**Default API URL:** `https://api.sigq.io/incidentlake/public-api`
+**Default API URL:** `https://api.prod.incidentlake.sigq.io/incidentlake/public-api`
 
 ---
 

@@ -1,5 +1,5 @@
 {
-  "name": "@sigq-io/incidentlake-mcp-library",
+  "name": "@sigq/incidentlake-mcp-library",
   "version": "0.4.0",
   "description": "MCP server for SIGQ Incident Lake — query and manage incidents from Claude Desktop, Cursor, and other MCP clients",
   "keywords": [
@@ -16,8 +16,7 @@
   },
   "homepage": "https://github.com/sigq-io/incidentlake-mcp-library#readme",
   "publishConfig": {
-    "registry": "https://npm.pkg.github.com",
-    "access": "public"
+    "registry": "https://registry.npmjs.org/"
   },
   "engines": {
     "node": ">=20"

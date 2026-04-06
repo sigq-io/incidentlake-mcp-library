@@ -50,7 +50,7 @@ export async function runConfigure(): Promise<void> {
 
   console.log('\nWelcome to Incident Lake MCP setup!\n');
 
-  const defaultUrl = 'https://api.sigq.io/incidentlake/public-api';
+  const defaultUrl = 'https://api.prod.incidentlake.sigq.io/incidentlake/public-api';
 
   const rawUrl = await prompt(rl, `? Enter your SIGQ API URL (press Enter for default):\n  [${defaultUrl}]: `);
   const apiUrl = rawUrl || defaultUrl;
