@@ -5,7 +5,7 @@ export type JsonObject = { [key: string]: JsonValue };
 
 /**
  * Incident status values.
- * accepts exactly this set .
+ * Accepts exactly this set.
  */
 export const INCIDENT_STATUSES = ['ongoing', 'resolved', 'stalled', 'cancelled'] as const;
 export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];

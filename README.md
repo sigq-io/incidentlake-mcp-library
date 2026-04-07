@@ -26,7 +26,7 @@ Claude Desktop  ──stdio──►  incidentlake-mcp  ──HTTPS──►  SI
 ## Step 1 — Run the setup wizard
 
 ```bash
-npx @sigq-io/incidentlake-mcp-library configure
+npx @sigq/incidentlake-mcp-library configure
 ```
 
 This will:

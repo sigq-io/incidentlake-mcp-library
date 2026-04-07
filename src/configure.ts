@@ -82,7 +82,7 @@ export async function runConfigure(): Promise<void> {
       mcpServers: {
         'incidentlake-mcp': {
           command: 'npx',
-          args: ['@sigq-io/incidentlake-mcp-library'],
+          args: ['@sigq/incidentlake-mcp-library'],
         },
       },
     },

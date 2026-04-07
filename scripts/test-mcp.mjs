@@ -10,9 +10,9 @@
  *   SIGQ_API_TOKEN — your public API bearer token
  *
  * Usage:
- *   node scripts/test-mcp.js               # run all tests and exit
- *   node scripts/test-mcp.js --interactive  # run tests then drop into interactive mode
- *   VERBOSE=1 node scripts/test-mcp.js     # also print server stderr logs
+ *   node scripts/test-mcp.mjs               # run all tests and exit
+ *   node scripts/test-mcp.mjs --interactive  # run tests then drop into interactive mode
+ *   VERBOSE=1 node scripts/test-mcp.mjs     # also print server stderr logs
  */
 
 import { spawn } from 'child_process';
@@ -243,7 +243,7 @@ async function main() {
   await test('create_incident', async () => {
     const data = parseContent(await callTool(mcpProcess, 'create_incident', {
       name: '[MCP Test] Automated test incident',
-      summary: 'Created by scripts/test-mcp.js — safe to delete',
+      summary: 'Created by scripts/test-mcp.mjs — safe to delete',
       severity: 4,
       tags: ['test:automated'],
     }));
@@ -262,7 +262,7 @@ async function main() {
     await test('update_incident', async () => {
       const data = parseContent(await callTool(mcpProcess, 'update_incident', {
         incidentId,
-        summary: 'Updated by scripts/test-mcp.js',
+        summary: 'Updated by scripts/test-mcp.mjs',
       }));
       if (data.id !== incidentId) throw new Error('ID mismatch');
       return data;
@@ -271,7 +271,7 @@ async function main() {
     await test('add_incident_note', async () => {
       return parseContent(await callTool(mcpProcess, 'add_incident_note', {
         incidentId,
-        content: 'Note added by scripts/test-mcp.js',
+        content: 'Note added by scripts/test-mcp.mjs',
       }));
     });
 
@@ -338,7 +338,7 @@ async function main() {
   await test('create_knowledge_item', async () => {
     const data = parseContent(await callTool(mcpProcess, 'create_knowledge_item', {
       title: '[MCP Test] Automated test knowledge item',
-      content: 'Created by scripts/test-mcp.js — safe to delete',
+      content: 'Created by scripts/test-mcp.mjs — safe to delete',
       tags: ['test:automated'],
     }));
     if (!data.id) throw new Error('No id in response');
@@ -356,7 +356,7 @@ async function main() {
     await test('update_knowledge_item', async () => {
       const data = parseContent(await callTool(mcpProcess, 'update_knowledge_item', {
         knowledgeId,
-        content: 'Updated by scripts/test-mcp.js',
+        content: 'Updated by scripts/test-mcp.mjs',
       }));
       if (data.id !== knowledgeId) throw new Error('ID mismatch');
       return data;
