@@ -10,10 +10,13 @@ export function registerUpdateKnowledgeItem(server: McpServer) {
       description:
         'Partially update a knowledge item (PATCH /v1/knowledge/{knowledgeId}). Provide at least one of title, content, isActive.',
       inputSchema: z.object({
-        knowledgeId: z.string().uuid(),
-        title: z.string().min(1).optional(),
-        content: z.string().min(1).optional(),
-        isActive: z.boolean().optional(),
+        knowledgeId: z.string().uuid().describe('UUID of the knowledge item to update.'),
+        title: z.string().min(1).optional().describe('New title for the knowledge item.'),
+        content: z.string().min(1).optional().describe('New content/body for the knowledge item.'),
+        isActive: z
+          .boolean()
+          .optional()
+          .describe('Whether the knowledge item should be active and available for use.'),
       }),
     },
     async (input) => {

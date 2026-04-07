@@ -2,12 +2,15 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema, optionalNullableEmailArraySchema } from '../coerceArrays';
+import { zIncidentStatusCreate } from '../incidentZod';
 import type { JsonObject } from '../types';
 
 const inputSchema = z.object({
   name: z.string().min(1).max(255).describe('Incident name (required, max 255 characters)'),
   summary: z.string().max(5000).optional().describe('Optional initial summary of the incident'),
-  status: z.enum(['ongoing', 'resolved']).optional().describe('Initial status (default: ongoing)'),
+  status: zIncidentStatusCreate.optional().describe(
+    'Initial status (Public API create: ongoing or resolved only; default ongoing)',
+  ),
   severity: z
     .number()
     .int()

@@ -34,7 +34,9 @@
     "lint": "eslint src/**/*.ts",
     "prepublishOnly": "npm run lint && npm run build",
     "dev": "tsx src/index.ts",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test:mcp": "node scripts/test-mcp.js",
+    "test:mcp:interactive": "node scripts/test-mcp.js --interactive"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",

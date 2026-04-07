@@ -3,11 +3,25 @@ export type JsonPrimitive = string | number | boolean | null;
 export type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
 export type JsonObject = { [key: string]: JsonValue };
 
+/**
+ * Incident status values.
+ * accepts exactly this set .
+ */
+export const INCIDENT_STATUSES = ['ongoing', 'resolved', 'stalled', 'cancelled'] as const;
+export type IncidentStatus = (typeof INCIDENT_STATUSES)[number];
+
+/**
+ * create body — OpenAPI only documents ongoing | resolved.
+ * The handler applies other statuses via update after insert only when non-ongoing.
+ */
+export const CREATE_INCIDENT_STATUSES = ['ongoing', 'resolved'] as const;
+export type IncidentCreateStatus = (typeof CREATE_INCIDENT_STATUSES)[number];
+
 export interface Incident {
   id: string;
   name: string;
   summary?: string;
-  status: 'ongoing' | 'resolved' | 'stalled';
+  status: IncidentStatus;
   severity?: number;
   declareSource?: 'api' | 'slack' | 'manual';
   occurredAt?: string;

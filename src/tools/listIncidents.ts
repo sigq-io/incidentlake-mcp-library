@@ -2,12 +2,12 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
+import { zIncidentStatusListFilter } from '../incidentZod';
 
 const inputSchema = z.object({
-  status: z
-    .enum(['ongoing', 'resolved', 'stalled'])
-    .optional()
-    .describe('Filter by incident status'),
+  status: zIncidentStatusListFilter.optional().describe(
+    'Filter by incident status (matches stored statuses, including cancelled)',
+  ),
   severity: z
     .number()
     .int()

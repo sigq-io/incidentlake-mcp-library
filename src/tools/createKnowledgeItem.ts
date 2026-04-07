@@ -10,9 +10,11 @@ export function registerCreateKnowledgeItem(server: McpServer) {
     {
       description: 'Create a knowledge item (POST /v1/knowledge). Requires title and content.',
       inputSchema: z.object({
-        title: z.string().min(1),
-        content: z.string().min(1),
-        tags: optionalNonEmptyStringArraySchema,
+        title: z.string().min(1).describe('Title of the knowledge item.'),
+        content: z.string().min(1).describe('Content/body of the knowledge item.'),
+        tags: optionalNonEmptyStringArraySchema.describe(
+          'Optional tags for the knowledge item. Provide as an array of non-empty strings or a comma-separated string.',
+        ),
       }),
     },
     async (input) => {

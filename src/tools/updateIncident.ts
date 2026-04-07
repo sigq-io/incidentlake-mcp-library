@@ -2,37 +2,66 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNullableEmailArraySchema } from '../coerceArrays';
-import type { JsonObject } from '../types';
+import { zIncidentStatusPatch } from '../incidentZod';
+import type { IncidentStatus, JsonObject } from '../types';
 
 const inputSchema = z.object({
   incidentId: z.string().uuid().describe('Incident UUID'),
   name: z.string().min(1).max(255).optional().describe('Incident title'),
-  status: z
-    .enum(['ongoing', 'resolved', 'stalled', 'cancelled'])
-    .optional()
-    .describe('Incident status'),
+  status: zIncidentStatusPatch.optional().describe(
+    'Incident status (same set as Public API PATCH: ongoing, resolved, stalled, cancelled)',
+  ),
   summary: z.string().optional().describe('Summary text'),
   timeline: z.string().optional(),
   postmortem: z.string().optional(),
-  occurredAt: z.string().nullable().optional().describe('ISO 8601 or null to clear'),
-  detectedAt: z.string().nullable().optional(),
-  responseStartedAt: z.string().nullable().optional(),
-  temporaryResponseCompletedAt: z.string().nullable().optional(),
-  permanentResponseCompletedAt: z.string().nullable().optional(),
+  occurredAt: z
+    .string()
+    .datetime()
+    .nullable()
+    .optional()
+    .describe('ISO 8601 datetime or null to clear (same validation as create_incident)'),
+  detectedAt: z
+    .string()
+    .datetime()
+    .nullable()
+    .optional()
+    .describe('ISO 8601 datetime or null to clear'),
+  responseStartedAt: z.string().datetime().nullable().optional(),
+  temporaryResponseCompletedAt: z.string().datetime().nullable().optional(),
+  permanentResponseCompletedAt: z.string().datetime().nullable().optional(),
   assigneeEmails: optionalNullableEmailArraySchema.describe(
     'Full commander list as JSON array of emails, or []; MCP may send a comma-separated string — that is accepted too.',
   ),
 });
+
+/**
+ * Handler argument type for `update_incident`. Zod validates at runtime; we avoid `z.infer<typeof inputSchema>`
+ * here because `assigneeEmails` uses `z.preprocess` and breaks TS inference (ShapeOutput / excessive depth).
+ */
+type UpdateIncidentToolInput = {
+  incidentId: string;
+  name?: string;
+  status?: IncidentStatus;
+  summary?: string;
+  timeline?: string;
+  postmortem?: string;
+  occurredAt?: string | null;
+  detectedAt?: string | null;
+  responseStartedAt?: string | null;
+  temporaryResponseCompletedAt?: string | null;
+  permanentResponseCompletedAt?: string | null;
+  assigneeEmails?: string[] | null;
+};
 
 export function registerUpdateIncident(server: McpServer) {
   server.registerTool(
     'update_incident',
     {
       description:
-        'Update an incident via Public API (PATCH). Provide at least one field. Matches Swagger: name, status, summary, timeline, postmortem, timeline fields, assigneeEmails.',
+        'Update an incident via Public API (PATCH /v1/incidents/{id}). Send at least one field: name, status, summary, timeline, postmortem; timestamps occurredAt, detectedAt, responseStartedAt, temporaryResponseCompletedAt, permanentResponseCompletedAt (ISO 8601 strings, or null to clear); assigneeEmails (full commander list).',
       inputSchema,
     },
-    async (input) => {
+    async (input: UpdateIncidentToolInput) => {
       try {
         const body: JsonObject = {};
         if (input.name !== undefined) body.name = input.name;
