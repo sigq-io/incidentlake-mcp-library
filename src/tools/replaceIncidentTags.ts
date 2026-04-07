@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { coercedTagArraySchema } from '../coerceArrays';
 
 export function registerReplaceIncidentTags(server: McpServer) {
   server.registerTool(
@@ -10,9 +11,9 @@ export function registerReplaceIncidentTags(server: McpServer) {
         'Replace all categorization tags on an incident (PATCH /v1/incidents/{id}/tags). Pass empty array to clear.',
       inputSchema: z.object({
         incidentId: z.string().uuid(),
-        tags: z
-          .array(z.string().min(1))
-          .describe('New full tag set (replaces existing). Empty array clears tags.'),
+        tags: coercedTagArraySchema.describe(
+          'New full tag set (replaces existing). Empty array clears tags. Array or comma-separated string.',
+        ),
       }),
     },
     async (input) => {

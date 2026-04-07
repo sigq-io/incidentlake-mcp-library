@@ -1,6 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
+import type { JsonObject } from '../types';
 
 export function registerCreateKnowledgeItem(server: McpServer) {
   server.registerTool(
@@ -10,12 +12,12 @@ export function registerCreateKnowledgeItem(server: McpServer) {
       inputSchema: z.object({
         title: z.string().min(1),
         content: z.string().min(1),
-        tags: z.array(z.string().min(1)).optional(),
+        tags: optionalNonEmptyStringArraySchema,
       }),
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = {
+        const body: JsonObject = {
           title: input.title,
           content: input.content,
         };

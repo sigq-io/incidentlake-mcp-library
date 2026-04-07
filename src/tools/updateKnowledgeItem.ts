@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import type { JsonObject } from '../types';
 
 export function registerUpdateKnowledgeItem(server: McpServer) {
   server.registerTool(
@@ -17,7 +18,7 @@ export function registerUpdateKnowledgeItem(server: McpServer) {
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = {};
+        const body: JsonObject = {};
         if (input.title !== undefined) body.title = input.title;
         if (input.content !== undefined) body.content = input.content;
         if (input.isActive !== undefined) body.isActive = input.isActive;

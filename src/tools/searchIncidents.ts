@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
 
 export function registerSearchIncidents(server: McpServer) {
   server.registerTool(
@@ -17,10 +18,9 @@ export function registerSearchIncidents(server: McpServer) {
           .max(100)
           .optional()
           .describe('Maximum number of results to return (default: 10)'),
-        tags: z
-          .array(z.string().min(1))
-          .optional()
-          .describe('Optional categorization tags AND filter (must match all)'),
+        tags: optionalNonEmptyStringArraySchema.describe(
+          'Optional categorization tags AND filter (must match all); array or comma-separated string.',
+        ),
       }),
     },
     async (input) => {

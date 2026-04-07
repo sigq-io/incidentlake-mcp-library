@@ -1,3 +1,8 @@
+/** JSON-serializable values for request/response typing. */
+export type JsonPrimitive = string | number | boolean | null;
+export type JsonValue = JsonPrimitive | JsonValue[] | JsonObject;
+export type JsonObject = { [key: string]: JsonValue };
+
 export interface Incident {
   id: string;
   name: string;
@@ -19,12 +24,12 @@ export interface PaginatedIncidents {
 }
 
 export interface IncidentDetail extends Incident {
-  timeline?: unknown[];
-  postmortem?: unknown;
-  tasks?: unknown[];
-  notes?: unknown[];
-  warRooms?: unknown[];
-  linkedServices?: unknown[];
+  timeline?: JsonValue[];
+  postmortem?: JsonValue;
+  tasks?: JsonValue[];
+  notes?: JsonValue[];
+  warRooms?: JsonValue[];
+  linkedServices?: JsonValue[];
 }
 
 export interface SearchResult {
@@ -66,4 +71,39 @@ export interface IncidentNote {
   content: string;
   createdBy: string;
   createdAt: string;
+}
+
+/** Active tenant member. */
+export interface TenantMember {
+  id: string;
+  email: string;
+  name: string;
+  authority: string;
+  memberStatus: string;
+}
+
+/**
+ * Knowledge article.
+ */
+export interface KnowledgeItem {
+  id: string;
+  title: string;
+  content: string;
+  tags?: string[];
+  isActive?: boolean;
+  currentVersion?: number;
+  createdAt: string;
+  updatedAt: string;
+  tenantId?: string;
+  createdBy?: string;
+  createdByEmail?: string;
+  updatedBy?: string | null;
+  reviewRequired?: boolean;
+  createdByApiTokenId?: string | null;
+}
+
+/** Get Knowledge tags with item counts. */
+export interface KnowledgeTagWithCount {
+  tag: string;
+  count: number;
 }

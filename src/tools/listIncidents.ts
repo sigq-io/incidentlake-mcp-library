@@ -1,18 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
-
-type ListIncidentsInput = {
-  status?: 'ongoing' | 'resolved' | 'stalled';
-  severity?: number;
-  declareSource?: 'api' | 'slack' | 'manual';
-  sortBy?: 'createdAt' | 'updatedAt' | 'name' | 'status' | 'severity';
-  sortDir?: 'asc' | 'desc';
-  limit?: number;
-  cursor?: string;
-  q?: string;
-  tags?: string[];
-};
+import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
 
 const inputSchema = z.object({
   status: z
@@ -50,13 +39,10 @@ const inputSchema = z.object({
     .string()
     .optional()
     .describe('Keyword search (matches name, status, source) — same as Public API list query'),
-  tags: z
-    .array(z.string().min(1))
-    .optional()
-    .describe(
-      'Categorization tags AND filter: incident must include every tag (repeat tag= in API)',
-    ),
-}) as z.ZodType<ListIncidentsInput>;
+  tags: optionalNonEmptyStringArraySchema.describe(
+    'Categorization tags AND filter: incident must include every tag (repeat tag= in API); array or comma-separated string.',
+  ),
+});
 
 export function registerListIncidents(server: McpServer) {
   server.registerTool(

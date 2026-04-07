@@ -1,20 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
-
-type CreateIncidentInput = {
-  name: string;
-  summary?: string;
-  status?: 'ongoing' | 'resolved';
-  severity?: number;
-  occurredAt?: string;
-  detectedAt?: string;
-  responseStartedAt?: string;
-  temporaryResponseCompletedAt?: string;
-  permanentResponseCompletedAt?: string;
-  assigneeEmails?: string[] | null;
-  tags?: string[];
-};
+import { optionalNonEmptyStringArraySchema, optionalNullableEmailArraySchema } from '../coerceArrays';
+import type { JsonObject } from '../types';
 
 const inputSchema = z.object({
   name: z.string().min(1).max(255).describe('Incident name (required, max 255 characters)'),
@@ -40,12 +28,13 @@ const inputSchema = z.object({
   responseStartedAt: z.string().datetime().optional(),
   temporaryResponseCompletedAt: z.string().datetime().optional(),
   permanentResponseCompletedAt: z.string().datetime().optional(),
-  assigneeEmails: z.array(z.string().email()).nullable().optional().describe('Active member emails'),
-  tags: z
-    .array(z.string().min(1))
-    .optional()
-    .describe('Categorization tags (e.g. client:acme, urgency:high)'),
-}) as z.ZodType<CreateIncidentInput>;
+  assigneeEmails: optionalNullableEmailArraySchema.describe(
+    'Active member emails as JSON array, or comma-separated string.',
+  ),
+  tags: optionalNonEmptyStringArraySchema.describe(
+    'Categorization tags (e.g. client:acme, urgency:high); array or comma-separated string.',
+  ),
+});
 
 export function registerCreateIncident(server: McpServer) {
   server.registerTool(
@@ -57,7 +46,7 @@ export function registerCreateIncident(server: McpServer) {
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = { name: input.name };
+        const body: JsonObject = { name: input.name };
         if (input.summary) body.summary = input.summary;
         if (input.status) body.status = input.status;
         if (input.severity) body.severity = input.severity;

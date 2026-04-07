@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { coercedTagArraySchema } from '../coerceArrays';
 
 export function registerUpdateKnowledgeItemTags(server: McpServer) {
   server.registerTool(
@@ -10,7 +11,9 @@ export function registerUpdateKnowledgeItemTags(server: McpServer) {
         'Replace all tags on a knowledge item (PATCH /v1/knowledge/{knowledgeId}/tags).',
       inputSchema: z.object({
         knowledgeId: z.string().uuid(),
-        tags: z.array(z.string().min(1)).describe('Full new tag list'),
+        tags: coercedTagArraySchema.describe(
+          'Full new tag list; array or comma-separated string.',
+        ),
       }),
     },
     async (input) => {

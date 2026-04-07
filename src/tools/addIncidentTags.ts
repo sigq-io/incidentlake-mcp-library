@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { requiredNonEmptyStringArraySchema } from '../coerceArrays';
 
 export function registerAddIncidentTags(server: McpServer) {
   server.registerTool(
@@ -10,10 +11,9 @@ export function registerAddIncidentTags(server: McpServer) {
         'Merge tags into an incident (POST /v1/incidents/{id}/tags). Duplicates ignored; returns full incident.',
       inputSchema: z.object({
         incidentId: z.string().uuid(),
-        tags: z
-          .array(z.string().min(1))
-          .min(1)
-          .describe('Non-empty tag strings, e.g. client:acme, urgency:high'),
+        tags: requiredNonEmptyStringArraySchema.describe(
+          'Non-empty tag strings, e.g. client:acme, urgency:high; array or comma-separated string.',
+        ),
       }),
     },
     async (input) => {

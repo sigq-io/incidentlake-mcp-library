@@ -1,6 +1,8 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { optionalNullableEmailArraySchema } from '../coerceArrays';
+import type { JsonObject } from '../types';
 
 const inputSchema = z.object({
   incidentId: z.string().uuid().describe('Incident UUID'),
@@ -17,11 +19,9 @@ const inputSchema = z.object({
   responseStartedAt: z.string().nullable().optional(),
   temporaryResponseCompletedAt: z.string().nullable().optional(),
   permanentResponseCompletedAt: z.string().nullable().optional(),
-  assigneeEmails: z
-    .array(z.string().email())
-    .nullable()
-    .optional()
-    .describe('Full commander list; use [] or null to clear'),
+  assigneeEmails: optionalNullableEmailArraySchema.describe(
+    'Full commander list as JSON array of emails, or []; MCP may send a comma-separated string — that is accepted too.',
+  ),
 });
 
 export function registerUpdateIncident(server: McpServer) {
@@ -34,7 +34,7 @@ export function registerUpdateIncident(server: McpServer) {
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = {};
+        const body: JsonObject = {};
         if (input.name !== undefined) body.name = input.name;
         if (input.status !== undefined) body.status = input.status;
         if (input.summary !== undefined) body.summary = input.summary;
