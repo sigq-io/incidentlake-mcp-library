@@ -95,10 +95,28 @@ Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with 
 
 - "List the 5 most recent ongoing incidents"
 - "Search for incidents related to database timeout"
+- "List incidents filtered by tags client:acme and urgency:high"
 - "Show me incident analytics for January 2025"
 - "Get the full details of incident `<uuid>`"
 - "Create an incident called 'Auth service degraded'"
 - "What SOP steps are completed for incident `<uuid>`?"
+- "Update incident `<uuid>` summary to include the latest customer impact"
+- "Resolve incident `<uuid>`"
+- "Reopen incident `<uuid>`"
+- "Delete incident `<uuid>`"
+- "What categorization tags are on incident `<uuid>`?"
+- "Add tags client:acme and urgency:high to incident `<uuid>`"
+- "Replace all tags on incident `<uuid>` with region:us-east and team:platform"
+- "Remove tag device:legacy from incident `<uuid>`"
+- "List all active tenant members"
+- "List all knowledge articles"
+- "Search knowledge for runbook checkout failure"
+- "Show knowledge tags and their item counts"
+- "Get the full knowledge article for `<uuid>`"
+- "Create a knowledge article titled Weekly deploy checklist with plain-text content"
+- "Update knowledge item `<uuid>` title to On-call handoff v2"
+- "Delete knowledge item `<uuid>`"
+- "Set tags on knowledge item `<uuid>` to runbook, operations"
 
 ---
 
