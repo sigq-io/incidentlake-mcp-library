@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
 
 export function registerSearchIncidents(server: McpServer) {
   server.registerTool(
@@ -17,11 +18,14 @@ export function registerSearchIncidents(server: McpServer) {
           .max(100)
           .optional()
           .describe('Maximum number of results to return (default: 10)'),
+        tags: optionalNonEmptyStringArraySchema.describe(
+          'Optional categorization tags AND filter (must match all); array or comma-separated string.',
+        ),
       }),
     },
     async (input) => {
       try {
-        const data = await api.searchIncidents(input.query, input.limit);
+        const data = await api.searchIncidents(input.query, input.limit, input.tags);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

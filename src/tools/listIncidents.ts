@@ -1,22 +1,13 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
-
-type ListIncidentsInput = {
-  status?: 'ongoing' | 'resolved' | 'stalled';
-  severity?: number;
-  declareSource?: 'api' | 'slack' | 'manual';
-  sortBy?: 'createdAt' | 'updatedAt' | 'name' | 'status' | 'severity';
-  sortDir?: 'asc' | 'desc';
-  limit?: number;
-  cursor?: string;
-};
+import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
+import { zIncidentStatusListFilter } from '../incidentZod';
 
 const inputSchema = z.object({
-  status: z
-    .enum(['ongoing', 'resolved', 'stalled'])
-    .optional()
-    .describe('Filter by incident status'),
+  status: zIncidentStatusListFilter.optional().describe(
+    'Filter by incident status (matches stored statuses, including cancelled)',
+  ),
   severity: z
     .number()
     .int()
@@ -44,7 +35,14 @@ const inputSchema = z.object({
     .string()
     .optional()
     .describe('Pagination cursor from previous response nextCursor field'),
-}) as z.ZodType<ListIncidentsInput>;
+  q: z
+    .string()
+    .optional()
+    .describe('Keyword search (matches name, status, source) — same as Public API list query'),
+  tags: optionalNonEmptyStringArraySchema.describe(
+    'Categorization tags AND filter: incident must include every tag (repeat tag= in API); array or comma-separated string.',
+  ),
+});
 
 export function registerListIncidents(server: McpServer) {
   server.registerTool(
@@ -64,6 +62,12 @@ export function registerListIncidents(server: McpServer) {
         if (input.sortDir) params.set('sortDir', input.sortDir);
         if (input.limit) params.set('limit', String(input.limit));
         if (input.cursor) params.set('cursor', input.cursor);
+        if (input.q) params.set('q', input.q);
+        if (input.tags) {
+          for (const t of input.tags) {
+            params.append('tag', t);
+          }
+        }
 
         const data = await api.listIncidents(params);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };

@@ -1,12 +1,30 @@
 import { loadConfig } from './configure';
 import type {
+  JsonValue,
+  JsonObject,
   PaginatedIncidents,
   IncidentDetail,
   SearchResult,
   AnalyticsData,
   SopCompletionsData,
   IncidentNote,
+  TenantMember,
+  KnowledgeItem,
+  KnowledgeTagWithCount,
 } from './types';
+
+function unwrapDataPayload<T>(json: JsonValue): T {
+  if (
+    json !== null &&
+    typeof json === 'object' &&
+    !Array.isArray(json) &&
+    'data' in json &&
+    (json as { data: JsonValue }).data !== undefined
+  ) {
+    return (json as { data: T }).data;
+  }
+  return json as T;
+}
 
 const REQUEST_TIMEOUT_MS = 30000;
 const MAX_RETRIES = 3;
@@ -48,10 +66,10 @@ async function fetchWithTimeout(
     return response;
   } catch (error) {
     clearTimeout(timeoutId);
-    if ((error as Error).name === 'AbortError') {
+    if (error instanceof Error && error.name === 'AbortError') {
       throw new Error(`Request timeout after ${timeoutMs}ms`);
     }
-    throw error;
+    throw error instanceof Error ? error : new Error(String(error));
   }
 }
 
@@ -88,17 +106,15 @@ async function apiRequest<T>(path: string, options: RequestInit = {}): Promise<T
         throw new Error(`API error ${response.status} for ${path}: ${body}`);
       }
 
-      const json = (await response.json()) as { success: boolean; data: T };
-      return json.data;
+      const json = (await response.json()) as JsonValue;
+      return unwrapDataPayload<T>(json);
     } catch (error) {
-      lastError = error as Error;
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
 
       // Don't retry non-retryable errors
-      if (
-        !(error as Error).message.includes('timeout') &&
-        !(error as Error).message.includes('fetch failed')
-      ) {
-        throw error;
+      if (!err.message.includes('timeout') && !err.message.includes('fetch failed')) {
+        throw err;
       }
 
       if (attempt < MAX_RETRIES) {
@@ -118,25 +134,106 @@ export const api = {
 
   getIncident: (id: string) => apiRequest<IncidentDetail>(`/v1/incidents/${id}`),
 
-  searchIncidents: (q: string, limit?: number) =>
-    apiRequest<SearchResult>(
-      `/v1/incidents/search?q=${encodeURIComponent(q)}${limit ? `&limit=${limit}` : ''}`,
-    ),
+  searchIncidents: (q: string, limit?: number, tags?: string[]) => {
+    const params = new URLSearchParams();
+    params.set('q', q);
+    if (limit !== undefined) params.set('limit', String(limit));
+    if (tags) {
+      for (const t of tags) {
+        params.append('tag', t);
+      }
+    }
+    return apiRequest<SearchResult>(`/v1/incidents/search?${params.toString()}`);
+  },
 
   getAnalytics: (startDate: string, endDate: string) =>
     apiRequest<AnalyticsData>(
       `/v1/incidents/analytics?startDate=${encodeURIComponent(startDate)}&endDate=${encodeURIComponent(endDate)}`,
     ),
 
-  createIncident: (body: Record<string, unknown>) =>
+  createIncident: (body: JsonObject) =>
     apiRequest<IncidentDetail>('/v1/incidents', { method: 'POST', body: JSON.stringify(body) }),
 
   getSopCompletions: (id: string) =>
     apiRequest<SopCompletionsData>(`/v1/incidents/${id}/sop-completions`),
 
-  addIncidentNote: (id: string, body: Record<string, unknown>) =>
+  addIncidentNote: (id: string, body: JsonObject) =>
     apiRequest<IncidentNote>(`/v1/incidents/${id}/notes`, {
       method: 'POST',
       body: JSON.stringify(body),
+    }),
+
+  updateIncident: (id: string, body: JsonObject) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  resolveIncident: (id: string) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}/resolve`, {
+      method: 'POST',
+      body: '{}',
+    }),
+
+  reopenIncident: (id: string) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}/reopen`, {
+      method: 'POST',
+      body: '{}',
+    }),
+
+  deleteIncident: (id: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(`/v1/incidents/${id}`, { method: 'DELETE' }),
+
+  getIncidentTags: (id: string) => apiRequest<{ tags: string[] }>(`/v1/incidents/${id}/tags`),
+
+  addIncidentTags: (id: string, tags: string[]) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}/tags`, {
+      method: 'POST',
+      body: JSON.stringify({ tags }),
+    }),
+
+  updateIncidentTags: (id: string, tags: string[]) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}/tags`, {
+      method: 'PATCH',
+      body: JSON.stringify({ tags }),
+    }),
+
+  removeIncidentTags: (id: string, tags: string[]) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${id}/tags`, {
+      method: 'DELETE',
+      body: JSON.stringify({ tags }),
+    }),
+
+  listMembers: () => apiRequest<TenantMember[]>('/v1/members'),
+
+  listKnowledgeItems: () => apiRequest<KnowledgeItem[]>('/v1/knowledge'),
+
+  searchKnowledgeItems: (query: string, limit?: number) => {
+    const q = `query=${encodeURIComponent(query)}${limit !== undefined ? `&limit=${limit}` : ''}`;
+    return apiRequest<KnowledgeItem[]>(`/v1/knowledge/search?${q}`);
+  },
+
+  listKnowledgeTags: () => apiRequest<KnowledgeTagWithCount[]>('/v1/knowledge/tags'),
+
+  getKnowledgeItem: (knowledgeId: string) => apiRequest<KnowledgeItem>(`/v1/knowledge/${knowledgeId}`),
+
+  createKnowledgeItem: (body: JsonObject) =>
+    apiRequest<KnowledgeItem>('/v1/knowledge', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateKnowledgeItem: (knowledgeId: string, body: JsonObject) =>
+    apiRequest<KnowledgeItem>(`/v1/knowledge/${knowledgeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteKnowledgeItem: (knowledgeId: string) =>
+    apiRequest<{ success: boolean; message: string }>(`/v1/knowledge/${knowledgeId}`, {
+      method: 'DELETE',
+    }),
+
+  updateKnowledgeItemTags: (knowledgeId: string, tags: string[]) =>
+    apiRequest<KnowledgeItem>(`/v1/knowledge/${knowledgeId}/tags`, {
+      method: 'PATCH',
+      body: JSON.stringify({ tags }),
     }),
 };

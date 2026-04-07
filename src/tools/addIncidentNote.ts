@@ -1,6 +1,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
+import type { JsonObject } from '../types';
 
 type AddIncidentNoteInput = {
   incidentId: string;
@@ -35,7 +36,7 @@ export function registerAddIncidentNote(server: McpServer) {
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = { content: input.content };
+        const body: JsonObject = { content: input.content };
         if (input.createdBy) body.createdBy = input.createdBy;
 
         const data = await api.addIncidentNote(input.incidentId, body);

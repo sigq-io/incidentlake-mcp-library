@@ -1,20 +1,16 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
 import { api } from '../client';
-
-type CreateIncidentInput = {
-  name: string;
-  summary?: string;
-  status?: 'ongoing' | 'resolved';
-  severity?: number;
-  occurredAt?: string;
-  detectedAt?: string;
-};
+import { optionalNonEmptyStringArraySchema, optionalNullableEmailArraySchema } from '../coerceArrays';
+import { zIncidentStatusCreate } from '../incidentZod';
+import type { JsonObject } from '../types';
 
 const inputSchema = z.object({
   name: z.string().min(1).max(255).describe('Incident name (required, max 255 characters)'),
   summary: z.string().max(5000).optional().describe('Optional initial summary of the incident'),
-  status: z.enum(['ongoing', 'resolved']).optional().describe('Initial status (default: ongoing)'),
+  status: zIncidentStatusCreate.optional().describe(
+    'Initial status (Public API create: ongoing or resolved only; default ongoing)',
+  ),
   severity: z
     .number()
     .int()
@@ -32,7 +28,16 @@ const inputSchema = z.object({
     .datetime()
     .optional()
     .describe('ISO 8601 timestamp when the incident was detected'),
-}) as z.ZodType<CreateIncidentInput>;
+  responseStartedAt: z.string().datetime().optional(),
+  temporaryResponseCompletedAt: z.string().datetime().optional(),
+  permanentResponseCompletedAt: z.string().datetime().optional(),
+  assigneeEmails: optionalNullableEmailArraySchema.describe(
+    'Active member emails as JSON array, or comma-separated string.',
+  ),
+  tags: optionalNonEmptyStringArraySchema.describe(
+    'Categorization tags (e.g. client:acme, urgency:high); array or comma-separated string.',
+  ),
+});
 
 export function registerCreateIncident(server: McpServer) {
   server.registerTool(
@@ -44,12 +49,21 @@ export function registerCreateIncident(server: McpServer) {
     },
     async (input) => {
       try {
-        const body: Record<string, unknown> = { name: input.name };
+        const body: JsonObject = { name: input.name };
         if (input.summary) body.summary = input.summary;
         if (input.status) body.status = input.status;
         if (input.severity) body.severity = input.severity;
         if (input.occurredAt) body.occurredAt = input.occurredAt;
         if (input.detectedAt) body.detectedAt = input.detectedAt;
+        if (input.responseStartedAt) body.responseStartedAt = input.responseStartedAt;
+        if (input.temporaryResponseCompletedAt) {
+          body.temporaryResponseCompletedAt = input.temporaryResponseCompletedAt;
+        }
+        if (input.permanentResponseCompletedAt) {
+          body.permanentResponseCompletedAt = input.permanentResponseCompletedAt;
+        }
+        if (input.assigneeEmails !== undefined) body.assigneeEmails = input.assigneeEmails;
+        if (input.tags?.length) body.tags = input.tags;
 
         const data = await api.createIncident(body);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
