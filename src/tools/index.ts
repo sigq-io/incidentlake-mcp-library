@@ -6,6 +6,23 @@ import { registerGetAnalytics } from './getAnalytics';
 import { registerCreateIncident } from './createIncident';
 import { registerGetSopCompletions } from './getSopCompletions';
 import { registerAddIncidentNote } from './addIncidentNote';
+import { registerUpdateIncident } from './updateIncident';
+import { registerResolveIncident } from './resolveIncident';
+import { registerReopenIncident } from './reopenIncident';
+import { registerDeleteIncident } from './deleteIncident';
+import { registerGetIncidentTags } from './getIncidentTags';
+import { registerAddIncidentTags } from './addIncidentTags';
+import { registerReplaceIncidentTags } from './replaceIncidentTags';
+import { registerRemoveIncidentTags } from './removeIncidentTags';
+import { registerListMembers } from './listMembers';
+import { registerListKnowledgeItems } from './listKnowledgeItems';
+import { registerSearchKnowledgeItems } from './searchKnowledgeItems';
+import { registerListKnowledgeTags } from './listKnowledgeTags';
+import { registerGetKnowledgeItem } from './getKnowledgeItem';
+import { registerCreateKnowledgeItem } from './createKnowledgeItem';
+import { registerUpdateKnowledgeItem } from './updateKnowledgeItem';
+import { registerDeleteKnowledgeItem } from './deleteKnowledgeItem';
+import { registerUpdateKnowledgeItemTags } from './updateKnowledgeItemTags';
 
 export function registerTools(server: McpServer) {
   registerListIncidents(server);
@@ -13,6 +30,23 @@ export function registerTools(server: McpServer) {
   registerSearchIncidents(server);
   registerGetAnalytics(server);
   registerCreateIncident(server);
+  registerUpdateIncident(server);
+  registerResolveIncident(server);
+  registerReopenIncident(server);
+  registerDeleteIncident(server);
   registerGetSopCompletions(server);
   registerAddIncidentNote(server);
+  registerGetIncidentTags(server);
+  registerAddIncidentTags(server);
+  registerReplaceIncidentTags(server);
+  registerRemoveIncidentTags(server);
+  registerListMembers(server);
+  registerListKnowledgeItems(server);
+  registerSearchKnowledgeItems(server);
+  registerListKnowledgeTags(server);
+  registerGetKnowledgeItem(server);
+  registerCreateKnowledgeItem(server);
+  registerUpdateKnowledgeItem(server);
+  registerDeleteKnowledgeItem(server);
+  registerUpdateKnowledgeItemTags(server);
 }

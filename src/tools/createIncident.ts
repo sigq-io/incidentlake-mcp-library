@@ -9,6 +9,11 @@ type CreateIncidentInput = {
   severity?: number;
   occurredAt?: string;
   detectedAt?: string;
+  responseStartedAt?: string;
+  temporaryResponseCompletedAt?: string;
+  permanentResponseCompletedAt?: string;
+  assigneeEmails?: string[] | null;
+  tags?: string[];
 };
 
 const inputSchema = z.object({
@@ -32,6 +37,14 @@ const inputSchema = z.object({
     .datetime()
     .optional()
     .describe('ISO 8601 timestamp when the incident was detected'),
+  responseStartedAt: z.string().datetime().optional(),
+  temporaryResponseCompletedAt: z.string().datetime().optional(),
+  permanentResponseCompletedAt: z.string().datetime().optional(),
+  assigneeEmails: z.array(z.string().email()).nullable().optional().describe('Active member emails'),
+  tags: z
+    .array(z.string().min(1))
+    .optional()
+    .describe('Categorization tags (e.g. client:acme, urgency:high)'),
 }) as z.ZodType<CreateIncidentInput>;
 
 export function registerCreateIncident(server: McpServer) {
@@ -50,6 +63,15 @@ export function registerCreateIncident(server: McpServer) {
         if (input.severity) body.severity = input.severity;
         if (input.occurredAt) body.occurredAt = input.occurredAt;
         if (input.detectedAt) body.detectedAt = input.detectedAt;
+        if (input.responseStartedAt) body.responseStartedAt = input.responseStartedAt;
+        if (input.temporaryResponseCompletedAt) {
+          body.temporaryResponseCompletedAt = input.temporaryResponseCompletedAt;
+        }
+        if (input.permanentResponseCompletedAt) {
+          body.permanentResponseCompletedAt = input.permanentResponseCompletedAt;
+        }
+        if (input.assigneeEmails !== undefined) body.assigneeEmails = input.assigneeEmails;
+        if (input.tags?.length) body.tags = input.tags;
 
         const data = await api.createIncident(body);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };

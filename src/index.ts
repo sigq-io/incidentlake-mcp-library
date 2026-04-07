@@ -20,7 +20,7 @@ if (process.argv[2] === 'configure') {
 async function main() {
   const server = new McpServer({
     name: 'sigq-incident-lake',
-    version: '0.3.0',
+    version: '0.7.0',
   });
 
   registerTools(server);

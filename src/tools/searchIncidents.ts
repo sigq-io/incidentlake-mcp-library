@@ -17,11 +17,15 @@ export function registerSearchIncidents(server: McpServer) {
           .max(100)
           .optional()
           .describe('Maximum number of results to return (default: 10)'),
+        tags: z
+          .array(z.string().min(1))
+          .optional()
+          .describe('Optional categorization tags AND filter (must match all)'),
       }),
     },
     async (input) => {
       try {
-        const data = await api.searchIncidents(input.query, input.limit);
+        const data = await api.searchIncidents(input.query, input.limit, input.tags);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
