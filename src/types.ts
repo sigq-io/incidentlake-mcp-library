@@ -121,3 +121,91 @@ export interface KnowledgeTagWithCount {
   tag: string;
   count: number;
 }
+
+export interface IncidentSeverity {
+  id: string;
+  incidentId: string;
+  tenantId: string;
+  severity: number;
+  isDraft: boolean;
+  reason: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IncidentSeveritiesData {
+  latestDraft: IncidentSeverity | null;
+  latestPublished: IncidentSeverity | null;
+  all: IncidentSeverity[];
+}
+
+export interface IncidentTask {
+  id: string;
+  incidentId: string;
+  tenantId: string;
+  title: string;
+  content: string | null;
+  currentStatus: string;
+  assignedTo: string | null;
+  dueDate: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface IncidentService {
+  id: string;
+  name: string;
+  protectionLevel?: string | null;
+}
+
+export interface RelatedResource {
+  id: string;
+  incidentId: string;
+  resource: JsonObject;
+  createdAt: string;
+}
+
+export interface ReportDraft {
+  id: string;
+  incidentId: string;
+  tenantId: string;
+  draftType: string;
+  content: string;
+  title: string | null;
+  dataHash: string | null;
+  createdByEmail: string;
+  createdAt: string;
+}
+
+export interface PublishedReport {
+  id: string;
+  incidentId: string;
+  tenantId: string;
+  reportType: string;
+  content: string;
+  title: string | null;
+  version: number;
+  createdAt: string;
+}
+
+export interface ScheduledWorkflow {
+  id: string;
+  incidentId: string;
+  tenantId: string;
+  scheduleType: string;
+  actionType: string;
+  status: string;
+  scheduledAt: string;
+  repeatIntervalMinutes?: number | null;
+  repeatUntil?: string | null;
+  createdAt: string;
+}
+
+export interface CommanderHistoryEntry {
+  tenantMemberId: string;
+  assignedAt: string;
+  retiredAt: string | null;
+  memberName: string | null;
+  memberEmail: string | null;
+}

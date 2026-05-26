@@ -11,6 +11,15 @@ import type {
   TenantMember,
   KnowledgeItem,
   KnowledgeTagWithCount,
+  IncidentSeverity,
+  IncidentSeveritiesData,
+  IncidentTask,
+  IncidentService,
+  RelatedResource,
+  ReportDraft,
+  PublishedReport,
+  ScheduledWorkflow,
+  CommanderHistoryEntry,
 } from './types';
 
 function unwrapDataPayload<T>(json: JsonValue): T {
@@ -235,5 +244,160 @@ export const api = {
     apiRequest<KnowledgeItem>(`/v1/knowledge/${knowledgeId}/tags`, {
       method: 'PATCH',
       body: JSON.stringify({ tags }),
+    }),
+
+  // Severities
+  listIncidentSeverities: (incidentId: string) =>
+    apiRequest<IncidentSeveritiesData>(`/v1/incidents/${incidentId}/severities`),
+
+  createIncidentSeverity: (incidentId: string, body: JsonObject) =>
+    apiRequest<IncidentSeverity>(`/v1/incidents/${incidentId}/severities`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateIncidentSeverity: (incidentId: string, severityId: string, body: JsonObject) =>
+    apiRequest<IncidentSeverity>(`/v1/incidents/${incidentId}/severities/${severityId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  publishIncidentSeverity: (incidentId: string, severityId: string) =>
+    apiRequest<IncidentSeverity>(
+      `/v1/incidents/${incidentId}/severities/${severityId}/publish`,
+      { method: 'POST', body: '{}' },
+    ),
+
+  // Notes
+  listIncidentNotes: (incidentId: string) =>
+    apiRequest<IncidentNote[]>(`/v1/incidents/${incidentId}/notes`),
+
+  updateIncidentNote: (incidentId: string, noteId: string, body: JsonObject) =>
+    apiRequest<IncidentNote>(`/v1/incidents/${incidentId}/notes/${noteId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentNote: (incidentId: string, noteId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/notes/${noteId}`,
+      { method: 'DELETE' },
+    ),
+
+  // Tasks
+  listIncidentTasks: (incidentId: string) =>
+    apiRequest<IncidentTask[]>(`/v1/incidents/${incidentId}/tasks`),
+
+  createIncidentTask: (incidentId: string, body: JsonObject) =>
+    apiRequest<IncidentTask>(`/v1/incidents/${incidentId}/tasks`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateIncidentTask: (incidentId: string, taskId: string, body: JsonObject) =>
+    apiRequest<IncidentTask>(`/v1/incidents/${incidentId}/tasks/${taskId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentTask: (incidentId: string, taskId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/tasks/${taskId}`,
+      { method: 'DELETE' },
+    ),
+
+  // SOP completions
+  completeSopStep: (incidentId: string, stepId: string, body: JsonObject) =>
+    apiRequest<JsonObject>(`/v1/incidents/${incidentId}/sop-completions/${stepId}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  uncompleteSopStep: (incidentId: string, stepId: string) =>
+    apiRequest<{ stepId: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/sop-completions/${stepId}`,
+      { method: 'DELETE' },
+    ),
+
+  // Commanders
+  getIncidentCommanders: (incidentId: string) =>
+    apiRequest<{ assignees: Array<{ name: string | null; email: string | null }> }>(
+      `/v1/incidents/${incidentId}/commander`,
+    ),
+
+  getCommanderHistory: (incidentId: string) =>
+    apiRequest<CommanderHistoryEntry[]>(`/v1/incidents/${incidentId}/commander/history`),
+
+  // Services
+  getIncidentServices: (incidentId: string) =>
+    apiRequest<IncidentService[]>(`/v1/incidents/${incidentId}/services`),
+
+  updateIncidentServices: (incidentId: string, serviceIds: string[]) =>
+    apiRequest<IncidentService[]>(`/v1/incidents/${incidentId}/services`, {
+      method: 'PATCH',
+      body: JSON.stringify({ serviceIds }),
+    }),
+
+  // Related resources
+  listRelatedResources: (incidentId: string) =>
+    apiRequest<RelatedResource[]>(`/v1/incidents/${incidentId}/related-resources`),
+
+  addRelatedResources: (incidentId: string, resourceIds: string[]) =>
+    apiRequest<RelatedResource[]>(`/v1/incidents/${incidentId}/related-resources`, {
+      method: 'POST',
+      body: JSON.stringify({ resourceIds }),
+    }),
+
+  deleteRelatedResource: (incidentId: string, resourceId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/related-resources/${resourceId}`,
+      { method: 'DELETE' },
+    ),
+
+  // Reports
+  listReportDrafts: (incidentId: string, draftType?: string) => {
+    const qs = draftType ? `?draftType=${encodeURIComponent(draftType)}` : '';
+    return apiRequest<ReportDraft[]>(`/v1/incidents/${incidentId}/report-drafts${qs}`);
+  },
+
+  createReportDraft: (incidentId: string, body: JsonObject) =>
+    apiRequest<ReportDraft>(`/v1/incidents/${incidentId}/report-drafts`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  listPublishedReports: (incidentId: string, reportType?: string) => {
+    const qs = reportType ? `?reportType=${encodeURIComponent(reportType)}` : '';
+    return apiRequest<PublishedReport[]>(`/v1/incidents/${incidentId}/published-reports${qs}`);
+  },
+
+  // Scheduled workflows
+  listScheduledWorkflows: (incidentId: string) =>
+    apiRequest<ScheduledWorkflow[]>(`/v1/incidents/${incidentId}/scheduled-workflows`),
+
+  createScheduledWorkflow: (incidentId: string, body: JsonObject) =>
+    apiRequest<ScheduledWorkflow>(`/v1/incidents/${incidentId}/scheduled-workflows`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  cancelScheduledWorkflow: (incidentId: string, workflowId: string) =>
+    apiRequest<{ id: string; status: string }>(
+      `/v1/incidents/${incidentId}/scheduled-workflows/${workflowId}`,
+      { method: 'DELETE' },
+    ),
+
+  // Members (individual)
+  getMember: (memberId: string) => apiRequest<TenantMember>(`/v1/members/${memberId}`),
+
+  updateMember: (memberId: string, body: JsonObject) =>
+    apiRequest<TenantMember>(`/v1/members/${memberId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  removeMember: (memberId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(`/v1/members/${memberId}`, {
+      method: 'DELETE',
     }),
 };
