@@ -20,6 +20,10 @@ import type {
   PublishedReport,
   ScheduledWorkflow,
   CommanderHistoryEntry,
+  Service,
+  Risk,
+  Integration,
+  BlastRadius,
 } from './types';
 
 function unwrapDataPayload<T>(json: JsonValue): T {
@@ -400,4 +404,59 @@ export const api = {
     apiRequest<{ id: string; deleted: boolean }>(`/v1/members/${memberId}`, {
       method: 'DELETE',
     }),
+
+  // Bulk incidents
+  bulkDeleteIncidents: (incidentIds: string[]) =>
+    apiRequest<{ deleted: string[]; failed: string[] }>('/v1/incidents/bulk', {
+      method: 'DELETE',
+      body: JSON.stringify({ incidentIds }),
+    }),
+
+  // Blast radius
+  getIncidentBlastRadius: (incidentId: string) =>
+    apiRequest<BlastRadius>(`/v1/incidents/${incidentId}/blast-radius`),
+
+  // Services (CMDB)
+  listServices: (params?: URLSearchParams) =>
+    apiRequest<Service[]>(`/v1/services${params ? `?${params.toString()}` : ''}`),
+
+  getService: (serviceId: string) =>
+    apiRequest<Service>(`/v1/services/${serviceId}`),
+
+  createService: (body: JsonObject) =>
+    apiRequest<Service>('/v1/services', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateService: (serviceId: string, body: JsonObject) =>
+    apiRequest<Service>(`/v1/services/${serviceId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteService: (serviceId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(`/v1/services/${serviceId}`, {
+      method: 'DELETE',
+    }),
+
+  // Risks
+  listRisks: (params?: URLSearchParams) =>
+    apiRequest<Risk[]>(`/v1/risks${params ? `?${params.toString()}` : ''}`),
+
+  getRisk: (riskId: string) =>
+    apiRequest<Risk>(`/v1/risks/${riskId}`),
+
+  createRisk: (body: JsonObject) =>
+    apiRequest<Risk>('/v1/risks', { method: 'POST', body: JSON.stringify(body) }),
+
+  updateRisk: (riskId: string, body: JsonObject) =>
+    apiRequest<Risk>(`/v1/risks/${riskId}`, { method: 'PATCH', body: JSON.stringify(body) }),
+
+  linkRiskToIncident: (riskId: string, incidentId: string) =>
+    apiRequest<{ riskId: string; incidentId: string; linked: boolean }>(
+      `/v1/risks/${riskId}/link-incident`,
+      { method: 'POST', body: JSON.stringify({ incidentId }) },
+    ),
+
+  // Integrations
+  listIntegrations: () =>
+    apiRequest<Integration[]>('/v1/integrations'),
 };
