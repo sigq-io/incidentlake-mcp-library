@@ -20,8 +20,9 @@ export function registerUpdateService(server: McpServer) {
           .describe('Updated protection level (1=highest, 5=lowest)'),
         serviceType: z
           .enum(['internal', 'external', 'cloud'])
+          .nullable()
           .optional()
-          .describe('Updated service type'),
+          .describe('Updated service type (null to clear)'),
         lifecycleState: z
           .enum(['planning', 'operating', 'retired'])
           .optional()

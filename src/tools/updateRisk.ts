@@ -11,15 +11,21 @@ export function registerUpdateRisk(server: McpServer) {
       inputSchema: z.object({
         riskId: z.string().uuid().describe('The UUID of the risk to update'),
         title: z.string().min(1).optional().describe('Updated title'),
-        description: z.string().optional().describe('Updated description'),
+        description: z
+          .string()
+          .nullable()
+          .optional()
+          .describe('Updated description (null to clear)'),
         category: z
           .enum(['code', 'infrastructure', 'dependency', 'business', 'operational'])
+          .nullable()
           .optional()
-          .describe('Updated category'),
+          .describe('Updated category (null to clear)'),
         severity: z
           .enum(['critical', 'high', 'medium', 'low', 'informational'])
+          .nullable()
           .optional()
-          .describe('Updated severity'),
+          .describe('Updated severity (null to clear)'),
         status: z
           .enum(['open', 'acknowledged', 'in_remediation', 'resolved', 'accepted', 'duplicate'])
           .optional()
@@ -30,7 +36,7 @@ export function registerUpdateRisk(server: McpServer) {
           .nullable()
           .optional()
           .describe('Updated linked service UUID (null to clear)'),
-        location: z.string().optional().describe('Updated location or component'),
+        location: z.string().nullable().optional().describe('Updated location or component (null to clear)'),
       }),
     },
     async (input) => {
