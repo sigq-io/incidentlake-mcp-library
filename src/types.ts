@@ -209,3 +209,56 @@ export interface CommanderHistoryEntry {
   memberName: string | null;
   memberEmail: string | null;
 }
+
+
+export interface Service {
+  id: string;
+  name: string;
+  serviceType?: string | null;
+  protectionLevel: number;
+  lifecycleState: string;
+  tags: string[];
+  customerNames: string[];
+  sla?: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export const RISK_CATEGORIES = ['code', 'infrastructure', 'dependency', 'business', 'operational'] as const;
+export type RiskCategory = (typeof RISK_CATEGORIES)[number];
+
+export const RISK_SEVERITIES = ['critical', 'high', 'medium', 'low', 'informational'] as const;
+export type RiskSeverity = (typeof RISK_SEVERITIES)[number];
+
+export const RISK_STATUSES = ['open', 'acknowledged', 'in_remediation', 'resolved', 'accepted', 'duplicate'] as const;
+export type RiskStatus = (typeof RISK_STATUSES)[number];
+
+export interface Risk {
+  id: string;
+  tenantId: string;
+  title: string;
+  description?: string | null;
+  category?: RiskCategory | null;
+  severity?: RiskSeverity | null;
+  status: RiskStatus;
+  serviceId?: string | null;
+  location?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Integration {
+  id: string;
+  type: string;
+  name?: string | null;
+  isConnected: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface BlastRadius {
+  incidentId: string;
+  services: Service[];
+  customerNames: string[];
+  totalCustomers: number;
+}

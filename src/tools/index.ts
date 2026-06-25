@@ -62,6 +62,24 @@ import { registerCancelScheduledWorkflow } from './cancelScheduledWorkflow';
 import { registerGetMember } from './getMember';
 import { registerUpdateMember } from './updateMember';
 import { registerRemoveMember } from './removeMember';
+// Bulk incidents
+import { registerBulkDeleteIncidents } from './bulkDeleteIncidents';
+// Blast radius
+import { registerGetIncidentBlastRadius } from './getIncidentBlastRadius';
+// Services (CMDB)
+import { registerListServices } from './listServices';
+import { registerGetService } from './getService';
+import { registerCreateService } from './createService';
+import { registerUpdateService } from './updateService';
+import { registerDeleteService } from './deleteService';
+// Risks
+import { registerListRisks } from './listRisks';
+import { registerGetRisk } from './getRisk';
+import { registerCreateRisk } from './createRisk';
+import { registerUpdateRisk } from './updateRisk';
+import { registerLinkRiskToIncident } from './linkRiskToIncident';
+// Integrations
+import { registerListIntegrations } from './listIntegrations';
 
 export function registerTools(server: McpServer) {
   // Incidents
@@ -121,6 +139,24 @@ export function registerTools(server: McpServer) {
   registerGetMember(server);
   registerUpdateMember(server);
   registerRemoveMember(server);
+  // Bulk incidents
+  registerBulkDeleteIncidents(server);
+  // Blast radius
+  registerGetIncidentBlastRadius(server);
+  // Services (CMDB)
+  registerListServices(server);
+  registerGetService(server);
+  registerCreateService(server);
+  registerUpdateService(server);
+  registerDeleteService(server);
+  // Risks
+  registerListRisks(server);
+  registerGetRisk(server);
+  registerCreateRisk(server);
+  registerUpdateRisk(server);
+  registerLinkRiskToIncident(server);
+  // Integrations
+  registerListIntegrations(server);
   // Knowledge
   registerListKnowledgeItems(server);
   registerSearchKnowledgeItems(server);
