@@ -80,6 +80,8 @@ import { registerUpdateRisk } from './updateRisk';
 import { registerLinkRiskToIncident } from './linkRiskToIncident';
 // Integrations
 import { registerListIntegrations } from './listIntegrations';
+// RBAC tags
+import { registerListRbacTags } from './listRbacTags';
 
 export function registerTools(server: McpServer) {
   // Incidents
@@ -157,6 +159,8 @@ export function registerTools(server: McpServer) {
   registerLinkRiskToIncident(server);
   // Integrations
   registerListIntegrations(server);
+  // RBAC tags
+  registerListRbacTags(server);
   // Knowledge
   registerListKnowledgeItems(server);
   registerSearchKnowledgeItems(server);

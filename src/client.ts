@@ -24,6 +24,7 @@ import type {
   Risk,
   Integration,
   BlastRadius,
+  RbacTag,
 } from './types';
 
 function unwrapDataPayload<T>(json: JsonValue): T {
@@ -459,4 +460,13 @@ export const api = {
   // Integrations
   listIntegrations: () =>
     apiRequest<Integration[]>('/v1/integrations'),
+
+  // RBAC tags
+  listRbacTags: () => apiRequest<RbacTag[]>('/v1/rbac-tags'),
+
+  updateIncidentRbacTags: (incidentId: string, rbacTagIds: string[]) =>
+    apiRequest<IncidentDetail>(`/v1/incidents/${incidentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ rbacTagIds }),
+    }),
 };
