@@ -32,6 +32,12 @@ const inputSchema = z.object({
   assigneeEmails: optionalNullableEmailArraySchema.describe(
     'Full commander list as JSON array of emails, or []; MCP may send a comma-separated string — that is accepted too.',
   ),
+  rbacTagIds: z
+    .array(z.string().uuid())
+    .optional()
+    .describe(
+      'Replaces all RBAC tags on the incident. Pass [] to clear. Call list_rbac_tags first to get valid IDs.',
+    ),
 });
 
 /**
@@ -51,6 +57,7 @@ type UpdateIncidentToolInput = {
   temporaryResponseCompletedAt?: string | null;
   permanentResponseCompletedAt?: string | null;
   assigneeEmails?: string[] | null;
+  rbacTagIds?: string[];
 };
 
 export function registerUpdateIncident(server: McpServer) {
@@ -58,7 +65,7 @@ export function registerUpdateIncident(server: McpServer) {
     'update_incident',
     {
       description:
-        'Update an incident via Public API (PATCH /v1/incidents/{id}). Send at least one field: name, status, summary, timeline, postmortem; timestamps occurredAt, detectedAt, responseStartedAt, temporaryResponseCompletedAt, permanentResponseCompletedAt (ISO 8601 strings, or null to clear); assigneeEmails (full commander list).',
+        'Update an incident via Public API (PATCH /v1/incidents/{id}). Send at least one field: name, status, summary, timeline, postmortem; timestamps occurredAt, detectedAt, responseStartedAt, temporaryResponseCompletedAt, permanentResponseCompletedAt (ISO 8601 strings, or null to clear); assigneeEmails (full commander list); rbacTagIds (replaces all RBAC tags, [] to clear — call list_rbac_tags first).',
       inputSchema,
     },
     async (input: UpdateIncidentToolInput) => {
@@ -79,6 +86,7 @@ export function registerUpdateIncident(server: McpServer) {
           body.permanentResponseCompletedAt = input.permanentResponseCompletedAt;
         }
         if (input.assigneeEmails !== undefined) body.assigneeEmails = input.assigneeEmails;
+        if (input.rbacTagIds !== undefined) body.rbacTagIds = input.rbacTagIds;
 
         if (Object.keys(body).length === 0) {
           return {

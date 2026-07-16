@@ -262,3 +262,11 @@ export interface BlastRadius {
   customerNames: string[];
   totalCustomers: number;
 }
+
+export interface RbacTag {
+  id: string;
+  name: string;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

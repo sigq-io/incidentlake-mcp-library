@@ -37,6 +37,12 @@ const inputSchema = z.object({
   tags: optionalNonEmptyStringArraySchema.describe(
     'Categorization tags (e.g. client:acme, urgency:high); array or comma-separated string.',
   ),
+  rbacTagIds: z
+    .array(z.string().uuid())
+    .optional()
+    .describe(
+      'RBAC tag UUIDs to assign on creation. Call list_rbac_tags first to get valid IDs.',
+    ),
 });
 
 export function registerCreateIncident(server: McpServer) {
@@ -64,6 +70,7 @@ export function registerCreateIncident(server: McpServer) {
         }
         if (input.assigneeEmails !== undefined) body.assigneeEmails = input.assigneeEmails;
         if (input.tags?.length) body.tags = input.tags;
+        if (input.rbacTagIds?.length) body.rbacTagIds = input.rbacTagIds;
 
         const data = await api.createIncident(body);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data, null, 2) }] };
