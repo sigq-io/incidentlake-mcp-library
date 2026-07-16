@@ -248,6 +248,47 @@ export function registerResources(server: McpServer) {
     },
   );
 
+  // Template resource: response timeline telemetry for a specific incident
+  server.registerResource(
+    'incident-phase-telemetry',
+    new ResourceTemplate('sigq://incidents/{id}/phase-telemetry', { list: undefined }),
+    {
+      description:
+        'Computed response timeline telemetry for a specific incident: per-phase capture counts, elapsed time between phases, and time-to-first-customer-communication / customer-handling-duration rollups',
+      mimeType: 'application/json',
+    },
+    async (uri: URL, variables: Record<string, string | string[]>) => {
+      try {
+        const rawId = variables['id'];
+        const incidentId = Array.isArray(rawId) ? rawId[0] : rawId;
+        if (!incidentId || !uuidSchema.safeParse(incidentId).success) {
+          throw new Error(`Invalid incident id: "${incidentId}"`);
+        }
+        const data = await api.getIncidentPhaseTelemetry(incidentId);
+        return {
+          contents: [
+            { uri: uri.href, mimeType: 'application/json', text: JSON.stringify(data, null, 2) },
+          ],
+        };
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        return {
+          contents: [
+            {
+              uri: uri.href,
+              mimeType: 'application/json',
+              text: JSON.stringify(
+                { error: `Failed to fetch incident phase telemetry: ${errorMessage}` },
+                null,
+                2,
+              ),
+            },
+          ],
+        };
+      }
+    },
+  );
+
   // Static resource: all active tenant members
   server.registerResource(
     'members',

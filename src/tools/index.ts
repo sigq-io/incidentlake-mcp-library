@@ -82,6 +82,12 @@ import { registerLinkRiskToIncident } from './linkRiskToIncident';
 import { registerListIntegrations } from './listIntegrations';
 // RBAC tags
 import { registerListRbacTags } from './listRbacTags';
+// Response Timeline
+import { registerGetIncidentPhaseGraph } from './getIncidentPhaseGraph';
+import { registerListIncidentPhaseCaptures } from './listIncidentPhaseCaptures';
+import { registerCreateIncidentPhaseCapture } from './createIncidentPhaseCapture';
+import { registerDeleteIncidentPhaseCapture } from './deleteIncidentPhaseCapture';
+import { registerGetIncidentPhaseTelemetry } from './getIncidentPhaseTelemetry';
 
 export function registerTools(server: McpServer) {
   // Incidents
@@ -161,6 +167,12 @@ export function registerTools(server: McpServer) {
   registerListIntegrations(server);
   // RBAC tags
   registerListRbacTags(server);
+  // Response Timeline
+  registerGetIncidentPhaseGraph(server);
+  registerListIncidentPhaseCaptures(server);
+  registerCreateIncidentPhaseCapture(server);
+  registerDeleteIncidentPhaseCapture(server);
+  registerGetIncidentPhaseTelemetry(server);
   // Knowledge
   registerListKnowledgeItems(server);
   registerSearchKnowledgeItems(server);
