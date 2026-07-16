@@ -165,6 +165,9 @@ async function main() {
     'list_knowledge_items', 'search_knowledge_items', 'list_knowledge_tags',
     'get_knowledge_item', 'create_knowledge_item', 'update_knowledge_item',
     'delete_knowledge_item', 'update_knowledge_item_tags',
+    'get_incident_phase_graph', 'list_incident_phase_captures',
+    'create_incident_phase_capture', 'delete_incident_phase_capture',
+    'get_incident_phase_telemetry',
   ];
 
   await test('tools/list — all expected tools present', async () => {
@@ -305,6 +308,62 @@ async function main() {
         tags: ['test:tag-replaced'],
       }));
     });
+
+    // ── Response timeline (phase graph / captures / telemetry) ──────────────
+    const phaseGraphData = await test('get_incident_phase_graph', async () => {
+      const data = parseContent(await callTool(mcpProcess, 'get_incident_phase_graph', { incidentId }));
+      if (!Array.isArray(data.nodes)) throw new Error('Expected nodes array');
+      return data;
+    });
+
+    if (phaseGraphData?.nodes?.length) {
+      const phaseNodeId = phaseGraphData.nodes[0].id;
+      let phaseCaptureId = null;
+
+      await test('create_incident_phase_capture', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'create_incident_phase_capture', {
+          incidentId,
+          nodeId: phaseNodeId,
+          note: 'Captured by scripts/test-mcp.mjs',
+        }));
+        if (!data.id) throw new Error('No id in response');
+        phaseCaptureId = data.id;
+        return data;
+      });
+
+      await test('list_incident_phase_captures', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'list_incident_phase_captures', { incidentId }));
+        if (!Array.isArray(data)) throw new Error('Expected array of captures');
+        return data;
+      });
+
+      await test('get_incident_phase_telemetry', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'get_incident_phase_telemetry', { incidentId }));
+        if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+          throw new Error('Expected telemetry nodes/edges arrays');
+        }
+        return data;
+      });
+
+      if (phaseCaptureId) {
+        await test('delete_incident_phase_capture (cleanup)', async () => {
+          const data = parseContent(await callTool(mcpProcess, 'delete_incident_phase_capture', {
+            incidentId,
+            captureId: phaseCaptureId,
+          }));
+          if (!data.success) throw new Error('Expected success=true');
+          return data;
+        });
+      } else {
+        skip('delete_incident_phase_capture', 'create_incident_phase_capture failed');
+      }
+    } else {
+      const phaseDependents = [
+        'create_incident_phase_capture', 'list_incident_phase_captures',
+        'get_incident_phase_telemetry', 'delete_incident_phase_capture',
+      ];
+      for (const t of phaseDependents) skip(t, 'no phase graph nodes configured for this tenant');
+    }
 
     await test('resolve_incident', async () => {
       const data = parseContent(await callTool(mcpProcess, 'resolve_incident', { incidentId }));
