@@ -84,6 +84,11 @@ import { registerListIntegrations } from './listIntegrations';
 import { registerListRbacTags } from './listRbacTags';
 // Response Timeline
 import { registerGetIncidentPhaseGraph } from './getIncidentPhaseGraph';
+import { registerCreateIncidentPhaseNode } from './createIncidentPhaseNode';
+import { registerUpdateIncidentPhaseNode } from './updateIncidentPhaseNode';
+import { registerDeleteIncidentPhaseNode } from './deleteIncidentPhaseNode';
+import { registerCreateIncidentPhaseEdge } from './createIncidentPhaseEdge';
+import { registerDeleteIncidentPhaseEdge } from './deleteIncidentPhaseEdge';
 import { registerListIncidentPhaseCaptures } from './listIncidentPhaseCaptures';
 import { registerCreateIncidentPhaseCapture } from './createIncidentPhaseCapture';
 import { registerDeleteIncidentPhaseCapture } from './deleteIncidentPhaseCapture';
@@ -169,6 +174,11 @@ export function registerTools(server: McpServer) {
   registerListRbacTags(server);
   // Response Timeline
   registerGetIncidentPhaseGraph(server);
+  registerCreateIncidentPhaseNode(server);
+  registerUpdateIncidentPhaseNode(server);
+  registerDeleteIncidentPhaseNode(server);
+  registerCreateIncidentPhaseEdge(server);
+  registerDeleteIncidentPhaseEdge(server);
   registerListIncidentPhaseCaptures(server);
   registerCreateIncidentPhaseCapture(server);
   registerDeleteIncidentPhaseCapture(server);

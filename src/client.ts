@@ -26,6 +26,8 @@ import type {
   BlastRadius,
   RbacTag,
   PhaseGraph,
+  PhaseNode,
+  PhaseEdge,
   PhaseCapture,
   IncidentPhaseTelemetry,
 } from './types';
@@ -476,6 +478,35 @@ export const api = {
   // Response Timeline (phase graph + telemetry)
   getIncidentPhaseGraph: (incidentId: string) =>
     apiRequest<PhaseGraph>(`/v1/incidents/${incidentId}/phase-graph`),
+
+  createIncidentPhaseNode: (incidentId: string, body: JsonObject) =>
+    apiRequest<PhaseNode>(`/v1/incidents/${incidentId}/phase-graph/nodes`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateIncidentPhaseNode: (incidentId: string, nodeId: string, body: JsonObject) =>
+    apiRequest<PhaseNode>(`/v1/incidents/${incidentId}/phase-graph/nodes/${nodeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentPhaseNode: (incidentId: string, nodeId: string) =>
+    apiRequest<{ success: boolean; isArchived: boolean }>(
+      `/v1/incidents/${incidentId}/phase-graph/nodes/${nodeId}`,
+      { method: 'DELETE' },
+    ),
+
+  createIncidentPhaseEdge: (incidentId: string, body: JsonObject) =>
+    apiRequest<PhaseEdge>(`/v1/incidents/${incidentId}/phase-graph/edges`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentPhaseEdge: (incidentId: string, edgeId: string) =>
+    apiRequest<{ success: boolean }>(`/v1/incidents/${incidentId}/phase-graph/edges/${edgeId}`, {
+      method: 'DELETE',
+    }),
 
   listIncidentPhaseCaptures: (incidentId: string) =>
     apiRequest<PhaseCapture[]>(`/v1/incidents/${incidentId}/phase-captures`),
