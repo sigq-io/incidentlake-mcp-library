@@ -165,6 +165,12 @@ async function main() {
     'list_knowledge_items', 'search_knowledge_items', 'list_knowledge_tags',
     'get_knowledge_item', 'create_knowledge_item', 'update_knowledge_item',
     'delete_knowledge_item', 'update_knowledge_item_tags',
+    'get_incident_phase_graph',
+    'create_incident_phase_node', 'update_incident_phase_node', 'delete_incident_phase_node',
+    'create_incident_phase_edge', 'delete_incident_phase_edge',
+    'list_incident_phase_captures',
+    'create_incident_phase_capture', 'delete_incident_phase_capture',
+    'get_incident_phase_telemetry',
   ];
 
   await test('tools/list — all expected tools present', async () => {
@@ -305,6 +311,156 @@ async function main() {
         tags: ['test:tag-replaced'],
       }));
     });
+
+    // ── Response timeline (phase graph / captures / telemetry) ──────────────
+    const phaseGraphData = await test('get_incident_phase_graph', async () => {
+      const data = parseContent(await callTool(mcpProcess, 'get_incident_phase_graph', { incidentId }));
+      if (!Array.isArray(data.nodes)) throw new Error('Expected nodes array');
+      return data;
+    });
+
+    if (phaseGraphData?.nodes?.length) {
+      const phaseNodeId = phaseGraphData.nodes[0].id;
+      let phaseCaptureId = null;
+
+      await test('create_incident_phase_capture', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'create_incident_phase_capture', {
+          incidentId,
+          nodeId: phaseNodeId,
+          note: 'Captured by scripts/test-mcp.mjs',
+        }));
+        if (!data.id) throw new Error('No id in response');
+        phaseCaptureId = data.id;
+        return data;
+      });
+
+      await test('list_incident_phase_captures', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'list_incident_phase_captures', { incidentId }));
+        if (!Array.isArray(data)) throw new Error('Expected array of captures');
+        return data;
+      });
+
+      await test('get_incident_phase_telemetry', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'get_incident_phase_telemetry', { incidentId }));
+        if (!Array.isArray(data.nodes) || !Array.isArray(data.edges)) {
+          throw new Error('Expected telemetry nodes/edges arrays');
+        }
+        return data;
+      });
+
+      if (phaseCaptureId) {
+        await test('delete_incident_phase_capture (cleanup)', async () => {
+          const data = parseContent(await callTool(mcpProcess, 'delete_incident_phase_capture', {
+            incidentId,
+            captureId: phaseCaptureId,
+          }));
+          if (!data.success) throw new Error('Expected success=true');
+          return data;
+        });
+      } else {
+        skip('delete_incident_phase_capture', 'create_incident_phase_capture failed');
+      }
+    } else {
+      const phaseDependents = [
+        'create_incident_phase_capture', 'list_incident_phase_captures',
+        'get_incident_phase_telemetry', 'delete_incident_phase_capture',
+      ];
+      for (const t of phaseDependents) skip(t, 'no phase graph nodes configured for this tenant');
+    }
+
+    // ── Response timeline (node/edge create-edit-link lifecycle) ─────────────
+    let phaseNodeAId = null;
+    let phaseNodeBId = null;
+    let phaseEdgeId = null;
+
+    await test('create_incident_phase_node', async () => {
+      const data = parseContent(await callTool(mcpProcess, 'create_incident_phase_node', {
+        incidentId,
+        label: '[MCP Test] Node A',
+      }));
+      if (!data.id) throw new Error('No id in response');
+      phaseNodeAId = data.id;
+      return data;
+    });
+
+    if (phaseNodeAId) {
+      await test('create_incident_phase_node (second node)', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'create_incident_phase_node', {
+          incidentId,
+          label: '[MCP Test] Node B',
+        }));
+        if (!data.id) throw new Error('No id in response');
+        phaseNodeBId = data.id;
+        return data;
+      });
+
+      await test('update_incident_phase_node', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'update_incident_phase_node', {
+          incidentId,
+          nodeId: phaseNodeAId,
+          label: '[MCP Test] Node A (renamed)',
+        }));
+        if (data.label !== '[MCP Test] Node A (renamed)') throw new Error('Label did not update');
+        return data;
+      });
+
+      if (phaseNodeBId) {
+        await test('create_incident_phase_edge', async () => {
+          const data = parseContent(await callTool(mcpProcess, 'create_incident_phase_edge', {
+            incidentId,
+            sourceNodeId: phaseNodeAId,
+            targetNodeId: phaseNodeBId,
+          }));
+          if (data.id === undefined) throw new Error('No id in response');
+          phaseEdgeId = data.id;
+          return data;
+        });
+
+        if (phaseEdgeId !== null) {
+          await test('delete_incident_phase_edge (cleanup)', async () => {
+            const data = parseContent(await callTool(mcpProcess, 'delete_incident_phase_edge', {
+              incidentId,
+              edgeId: phaseEdgeId,
+            }));
+            if (!data.success) throw new Error('Expected success=true');
+            return data;
+          });
+        } else {
+          skip('delete_incident_phase_edge', 'create_incident_phase_edge failed');
+        }
+      } else {
+        for (const t of ['create_incident_phase_edge', 'delete_incident_phase_edge']) {
+          skip(t, 'create_incident_phase_node (second node) failed');
+        }
+      }
+
+      await test('delete_incident_phase_node (cleanup, node A)', async () => {
+        const data = parseContent(await callTool(mcpProcess, 'delete_incident_phase_node', {
+          incidentId,
+          nodeId: phaseNodeAId,
+        }));
+        if (data.isArchived === undefined) throw new Error('Expected isArchived in response');
+        return data;
+      });
+
+      if (phaseNodeBId) {
+        await test('delete_incident_phase_node (cleanup, node B)', async () => {
+          const data = parseContent(await callTool(mcpProcess, 'delete_incident_phase_node', {
+            incidentId,
+            nodeId: phaseNodeBId,
+          }));
+          if (data.isArchived === undefined) throw new Error('Expected isArchived in response');
+          return data;
+        });
+      }
+    } else {
+      const phaseNodeDependents = [
+        'create_incident_phase_node (second node)', 'update_incident_phase_node',
+        'create_incident_phase_edge', 'delete_incident_phase_edge',
+        'delete_incident_phase_node (cleanup, node A)', 'delete_incident_phase_node (cleanup, node B)',
+      ];
+      for (const t of phaseNodeDependents) skip(t, 'create_incident_phase_node failed');
+    }
 
     await test('resolve_incident', async () => {
       const data = parseContent(await callTool(mcpProcess, 'resolve_incident', { incidentId }));

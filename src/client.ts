@@ -25,6 +25,11 @@ import type {
   Integration,
   BlastRadius,
   RbacTag,
+  PhaseGraph,
+  PhaseNode,
+  PhaseEdge,
+  PhaseCapture,
+  IncidentPhaseTelemetry,
 } from './types';
 
 function unwrapDataPayload<T>(json: JsonValue): T {
@@ -469,4 +474,54 @@ export const api = {
       method: 'PATCH',
       body: JSON.stringify({ rbacTagIds }),
     }),
+
+  // Response Timeline (phase graph + telemetry)
+  getIncidentPhaseGraph: (incidentId: string) =>
+    apiRequest<PhaseGraph>(`/v1/incidents/${incidentId}/phase-graph`),
+
+  createIncidentPhaseNode: (incidentId: string, body: JsonObject) =>
+    apiRequest<PhaseNode>(`/v1/incidents/${incidentId}/phase-graph/nodes`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  updateIncidentPhaseNode: (incidentId: string, nodeId: string, body: JsonObject) =>
+    apiRequest<PhaseNode>(`/v1/incidents/${incidentId}/phase-graph/nodes/${nodeId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentPhaseNode: (incidentId: string, nodeId: string) =>
+    apiRequest<{ success: boolean; isArchived: boolean }>(
+      `/v1/incidents/${incidentId}/phase-graph/nodes/${nodeId}`,
+      { method: 'DELETE' },
+    ),
+
+  createIncidentPhaseEdge: (incidentId: string, body: JsonObject) =>
+    apiRequest<PhaseEdge>(`/v1/incidents/${incidentId}/phase-graph/edges`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentPhaseEdge: (incidentId: string, edgeId: string) =>
+    apiRequest<{ success: boolean }>(`/v1/incidents/${incidentId}/phase-graph/edges/${edgeId}`, {
+      method: 'DELETE',
+    }),
+
+  listIncidentPhaseCaptures: (incidentId: string) =>
+    apiRequest<PhaseCapture[]>(`/v1/incidents/${incidentId}/phase-captures`),
+
+  createIncidentPhaseCapture: (incidentId: string, body: JsonObject) =>
+    apiRequest<PhaseCapture>(`/v1/incidents/${incidentId}/phase-captures`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  deleteIncidentPhaseCapture: (incidentId: string, captureId: string) =>
+    apiRequest<{ success: boolean }>(`/v1/incidents/${incidentId}/phase-captures/${captureId}`, {
+      method: 'DELETE',
+    }),
+
+  getIncidentPhaseTelemetry: (incidentId: string) =>
+    apiRequest<IncidentPhaseTelemetry>(`/v1/incidents/${incidentId}/phase-telemetry`),
 };

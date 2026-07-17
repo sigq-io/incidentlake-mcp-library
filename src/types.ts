@@ -270,3 +270,80 @@ export interface RbacTag {
   createdAt: string;
   updatedAt: string;
 }
+
+/** Response timeline graph node — a response phase (e.g. impact_scope, client_communication, or a custom phase). */
+export interface PhaseNode {
+  id: string;
+  tenantId: string;
+  incidentId: string | null;
+  label: string;
+  description: string | null;
+  phaseKey: string | null;
+  positionX: number;
+  positionY: number;
+  sortOrder: number;
+  isArchived: boolean;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Directed edge between two phase graph nodes. */
+export interface PhaseEdge {
+  id: number;
+  tenantId: string;
+  incidentId: string | null;
+  sourceNodeId: string;
+  targetNodeId: string;
+  createdAt: string;
+}
+
+/** The response timeline graph that applies to an incident (its bound workflow, or the tenant default). */
+export interface PhaseGraph {
+  isCustom: boolean;
+  nodes: PhaseNode[];
+  edges: PhaseEdge[];
+}
+
+/** A recorded response timeline event — a phase reached at a point in time. */
+export interface PhaseCapture {
+  id: string;
+  tenantId: string;
+  incidentId: string;
+  nodeId: string;
+  capturedAt: string;
+  source: 'manual' | 'ai_detect';
+  note: string | null;
+  createdBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PhaseNodeTelemetry {
+  nodeId: string;
+  label: string;
+  phaseKey: string | null;
+  captureCount: number;
+  firstCapturedAt: string | null;
+  lastCapturedAt: string | null;
+}
+
+export interface PhaseEdgeTelemetry {
+  sourceNodeId: string;
+  targetNodeId: string;
+  sourceLabel: string;
+  targetLabel: string;
+  sourceCapturedAt: string | null;
+  targetCapturedAt: string | null;
+  elapsedMs: number | null;
+}
+
+/** Computed response timeline telemetry for an incident. */
+export interface IncidentPhaseTelemetry {
+  incidentId: string;
+  nodes: PhaseNodeTelemetry[];
+  edges: PhaseEdgeTelemetry[];
+  captures: PhaseCapture[];
+  timeToFirstCustomerCommunicationMs: number | null;
+  customerHandlingDurationMs: number | null;
+}
