@@ -44,6 +44,16 @@ export interface IncidentDetail extends Incident {
   notes?: JsonValue[];
   warRooms?: JsonValue[];
   linkedServices?: JsonValue[];
+  /** Slack threads linked manually (Communication tab or add_slack_thread). */
+  slackThreadUrls?: IncidentSlackThreadUrl[];
+}
+
+export interface IncidentSlackThreadUrl {
+  id: string;
+  url: string;
+  channelName: string | null;
+  createdAt: string;
+  threadMessages?: JsonValue[];
 }
 
 export interface SearchResult {
