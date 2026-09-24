@@ -50,6 +50,8 @@ import { registerUpdateIncidentServices } from './updateIncidentServices';
 import { registerListRelatedResources } from './listRelatedResources';
 import { registerAddRelatedResources } from './addRelatedResources';
 import { registerDeleteRelatedResource } from './deleteRelatedResource';
+import { registerAddSlackThread } from './addSlackThread';
+import { registerDeleteSlackThread } from './deleteSlackThread';
 // Reports
 import { registerListReportDrafts } from './listReportDrafts';
 import { registerCreateReportDraft } from './createReportDraft';
@@ -161,6 +163,8 @@ export function registerTools(server: McpServer) {
   registerListRelatedResources(server);
   registerAddRelatedResources(server);
   registerDeleteRelatedResource(server);
+  registerAddSlackThread(server);
+  registerDeleteSlackThread(server);
   // Reports
   registerListReportDrafts(server);
   registerCreateReportDraft(server);

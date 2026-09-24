@@ -166,6 +166,17 @@ export interface RelatedResource {
   createdAt: string;
 }
 
+export interface SlackThread {
+  id: string;
+  url: string;
+  channelName: string | null;
+  createdAt: string;
+  /** Set when the Slack bot could not read the thread (e.g. 'not_in_channel'); the link is still created. */
+  accessWarning: string | null;
+  /** Number of messages ingested, or null when ingestion was skipped. */
+  ingestedMessageCount: number | null;
+}
+
 export type ZabbixSeverityLabel =
   | 'Not classified'
   | 'Information'

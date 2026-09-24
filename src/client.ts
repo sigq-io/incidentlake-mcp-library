@@ -19,6 +19,7 @@ import type {
   IncidentTask,
   IncidentService,
   RelatedResource,
+  SlackThread,
   ReportDraft,
   PublishedReport,
   ScheduledWorkflow,
@@ -384,6 +385,19 @@ export const api = {
   deleteRelatedResource: (incidentId: string, resourceId: string) =>
     apiRequest<{ id: string; deleted: boolean }>(
       `/v1/incidents/${incidentId}/related-resources/${resourceId}`,
+      { method: 'DELETE' },
+    ),
+
+  // Slack threads
+  addSlackThread: (incidentId: string, url: string) =>
+    apiRequest<SlackThread>(`/v1/incidents/${incidentId}/slack-threads`, {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    }),
+
+  deleteSlackThread: (incidentId: string, threadId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/slack-threads/${threadId}`,
       { method: 'DELETE' },
     ),
 

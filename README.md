@@ -108,6 +108,7 @@ Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with 
 - "Add tags client:acme and urgency:high to incident `<uuid>`"
 - "Replace all tags on incident `<uuid>` with region:us-east and team:platform"
 - "Remove tag device:legacy from incident `<uuid>`"
+- "Link Slack thread https://acme.slack.com/archives/C0123ABCD/p1727150000123456 to incident `<uuid>`"
 - "List all active tenant members"
 - "List all knowledge articles"
 - "Search knowledge for runbook checkout failure"
