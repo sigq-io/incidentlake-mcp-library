@@ -122,6 +122,60 @@ export interface KnowledgeTagWithCount {
   count: number;
 }
 
+/** Tenant the presented API token is bound to (GET /v1/me). */
+export interface CurrentTenant {
+  id: string;
+  name: string;
+  defaultLanguage: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * AI-generated knowledge draft awaiting review.
+ * Not returned by GET /v1/knowledge until approved.
+ */
+export interface PendingKnowledgeDraft {
+  id: string;
+  tenantId: string;
+  createdBy: string;
+  createdByEmail: string | null;
+  title: string;
+  content: string;
+  tags: string[];
+  isActive: boolean;
+  reviewStatus: string;
+  source: string;
+  sourceReportId: string | null;
+  sourceIncidentId: string | null;
+  currentVersion: number;
+  updatedBy: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Approved AI knowledge draft (POST /v1/knowledge/{id}/approve). */
+export type ApprovedKnowledgeDraft = Omit<PendingKnowledgeDraft, 'createdByEmail'>;
+
+/** Jira issue hit from GET /v1/integrations/jira/issues. */
+export interface JiraSearchHit {
+  issueKey: string;
+  summary: string;
+  statusName?: string;
+  issueTypeName?: string;
+  priorityName?: string;
+  updatedAt?: string;
+  url: string;
+}
+
+/** Notion page hit from GET /v1/integrations/notion/search. */
+export interface NotionSearchHit {
+  title: string;
+  url: string;
+  lastEditedAt: string | null;
+  objectType: 'page' | 'database';
+}
+
 export interface IncidentSeverity {
   id: string;
   incidentId: string;

@@ -1,4 +1,5 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { registerGetCurrentTenant } from './getCurrentTenant';
 import { registerListIncidents } from './listIncidents';
 import { registerGetIncident } from './getIncident';
 import { registerSearchIncidents } from './searchIncidents';
@@ -23,6 +24,9 @@ import { registerCreateKnowledgeItem } from './createKnowledgeItem';
 import { registerUpdateKnowledgeItem } from './updateKnowledgeItem';
 import { registerDeleteKnowledgeItem } from './deleteKnowledgeItem';
 import { registerUpdateKnowledgeItemTags } from './updateKnowledgeItemTags';
+import { registerListPendingKnowledgeDrafts } from './listPendingKnowledgeDrafts';
+import { registerApproveKnowledgeDraft } from './approveKnowledgeDraft';
+import { registerDismissKnowledgeDraft } from './dismissKnowledgeDraft';
 // Severities
 import { registerListIncidentSeverities } from './listIncidentSeverities';
 import { registerCreateIncidentSeverity } from './createIncidentSeverity';
@@ -50,6 +54,7 @@ import { registerUpdateIncidentServices } from './updateIncidentServices';
 import { registerListRelatedResources } from './listRelatedResources';
 import { registerAddRelatedResources } from './addRelatedResources';
 import { registerDeleteRelatedResource } from './deleteRelatedResource';
+import { registerAddRelatedResourceByUrl } from './addRelatedResourceByUrl';
 // Reports
 import { registerListReportDrafts } from './listReportDrafts';
 import { registerCreateReportDraft } from './createReportDraft';
@@ -94,6 +99,8 @@ import { registerUpdateRisk } from './updateRisk';
 import { registerLinkRiskToIncident } from './linkRiskToIncident';
 // Integrations
 import { registerListIntegrations } from './listIntegrations';
+import { registerSearchJiraIssues } from './searchJiraIssues';
+import { registerSearchNotionPages } from './searchNotionPages';
 // Zabbix
 import { registerSearchZabbixProblems } from './searchZabbixProblems';
 import { registerAddZabbixRelatedResource } from './addZabbixRelatedResource';
@@ -117,6 +124,7 @@ import { registerDeleteIncidentPhaseCapture } from './deleteIncidentPhaseCapture
 import { registerGetIncidentPhaseTelemetry } from './getIncidentPhaseTelemetry';
 
 export function registerTools(server: McpServer) {
+  registerGetCurrentTenant(server);
   // Incidents
   registerListIncidents(server);
   registerGetIncident(server);
@@ -161,6 +169,7 @@ export function registerTools(server: McpServer) {
   registerListRelatedResources(server);
   registerAddRelatedResources(server);
   registerDeleteRelatedResource(server);
+  registerAddRelatedResourceByUrl(server);
   // Reports
   registerListReportDrafts(server);
   registerCreateReportDraft(server);
@@ -206,6 +215,8 @@ export function registerTools(server: McpServer) {
   registerLinkRiskToIncident(server);
   // Integrations
   registerListIntegrations(server);
+  registerSearchJiraIssues(server);
+  registerSearchNotionPages(server);
   // Zabbix
   registerSearchZabbixProblems(server);
   registerAddZabbixRelatedResource(server);
@@ -236,4 +247,7 @@ export function registerTools(server: McpServer) {
   registerUpdateKnowledgeItem(server);
   registerDeleteKnowledgeItem(server);
   registerUpdateKnowledgeItemTags(server);
+  registerListPendingKnowledgeDrafts(server);
+  registerApproveKnowledgeDraft(server);
+  registerDismissKnowledgeDraft(server);
 }
