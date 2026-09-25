@@ -14,6 +14,11 @@ import type {
   TenantMember,
   KnowledgeItem,
   KnowledgeTagWithCount,
+  CurrentTenant,
+  PendingKnowledgeDraft,
+  ApprovedKnowledgeDraft,
+  JiraSearchHit,
+  NotionSearchHit,
   IncidentSeverity,
   IncidentSeveritiesData,
   IncidentTask,
@@ -58,6 +63,8 @@ function unwrapDataPayload<T>(json: JsonValue): T {
 }
 
 const REQUEST_TIMEOUT_MS = 30000;
+// Approval translates the draft and writes embeddings before responding.
+const APPROVE_KNOWLEDGE_DRAFT_TIMEOUT_MS = 120_000;
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
@@ -111,11 +118,14 @@ async function fetchWithTimeout(
  * that creates new rows, or an action that's recorded once per call. A response that
  * 4xx errors other than 429 are never retried; 429/5xx responses and timeouts/network
  * failures are retried up to maxRetries.
+ * @param timeoutMs Overrides REQUEST_TIMEOUT_MS for a call whose server work (translation,
+ * embedding, a large download) can outlast the default.
  */
 async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
   maxRetries: number = MAX_RETRIES,
+  timeoutMs: number = REQUEST_TIMEOUT_MS,
 ): Promise<T> {
   const { apiUrl, apiToken } = getCredentials();
 
@@ -129,7 +139,7 @@ async function apiRequest<T>(
 
   for (let attempt = 0; attempt <= maxRetries; attempt++) {
     try {
-      const response = await fetchWithTimeout(url, { ...options, headers }, REQUEST_TIMEOUT_MS);
+      const response = await fetchWithTimeout(url, { ...options, headers }, timeoutMs);
 
       if (!response.ok) {
         // Don't retry 4xx errors (client errors)
@@ -172,6 +182,8 @@ async function apiRequest<T>(
 }
 
 export const api = {
+  getCurrentTenant: () => apiRequest<CurrentTenant>('/v1/me'),
+
   listIncidents: (params: URLSearchParams) =>
     apiRequest<PaginatedIncidents>(`/v1/incidents?${params.toString()}`),
 
@@ -280,6 +292,28 @@ export const api = {
       body: JSON.stringify({ tags }),
     }),
 
+  listPendingKnowledgeDrafts: () =>
+    apiRequest<PendingKnowledgeDraft[]>('/v1/knowledge/pending-drafts'),
+
+  // approveKnowledgeDraft and dismissKnowledgeDraft are NOT retried: each leaves the draft
+  // no longer pending, so a retry after a timeout surfaces as a 404 instead of the result.
+  // Approval also translates the draft and writes embeddings before responding, so it uses
+  // the same 120s budget as incident export rather than the 30s default.
+  approveKnowledgeDraft: (knowledgeId: string) =>
+    apiRequest<ApprovedKnowledgeDraft>(
+      `/v1/knowledge/${knowledgeId}/approve`,
+      { method: 'POST' },
+      0,
+      APPROVE_KNOWLEDGE_DRAFT_TIMEOUT_MS,
+    ),
+
+  dismissKnowledgeDraft: (knowledgeId: string) =>
+    apiRequest<{ success: boolean; id: string }>(
+      `/v1/knowledge/${knowledgeId}/dismiss`,
+      { method: 'POST' },
+      0,
+    ),
+
   // Severities
   listIncidentSeverities: (incidentId: string) =>
     apiRequest<IncidentSeveritiesData>(`/v1/incidents/${incidentId}/severities`),
@@ -387,6 +421,12 @@ export const api = {
       `/v1/incidents/${incidentId}/related-resources/${resourceId}`,
       { method: 'DELETE' },
     ),
+
+  addRelatedResourceByUrl: (incidentId: string, url: string) =>
+    apiRequest<RelatedResource>(`/v1/incidents/${incidentId}/related-resources/url`, {
+      method: 'POST',
+      body: JSON.stringify({ url }),
+    }),
 
   // Slack threads
   //
@@ -651,6 +691,16 @@ export const api = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+
+  searchJiraIssues: (query?: string) => {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+    return apiRequest<JiraSearchHit[]>(`/v1/integrations/jira/issues${qs}`);
+  },
+
+  searchNotionPages: (query?: string) => {
+    const qs = query ? `?q=${encodeURIComponent(query)}` : '';
+    return apiRequest<NotionSearchHit[]>(`/v1/integrations/notion/search${qs}`);
+  },
 };
 
 // ---------------------------------------------------------------------------
