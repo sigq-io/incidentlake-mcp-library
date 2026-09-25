@@ -24,6 +24,7 @@ import type {
   IncidentTask,
   IncidentService,
   RelatedResource,
+  SlackThread,
   ReportDraft,
   PublishedReport,
   ScheduledWorkflow,
@@ -426,6 +427,26 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ url }),
     }),
+
+  // Slack threads
+  //
+  // addSlackThread is NOT retried on a timeout/network failure: the server links the
+  // thread and then ingests its messages from Slack before responding, so a slow
+  // ingestion can outlive the client timeout after the link row is already committed.
+  // A retry would then surface as a misleading 409 "already linked" instead of the
+  // ingestion result — see apiRequest's maxRetries.
+  addSlackThread: (incidentId: string, url: string) =>
+    apiRequest<SlackThread>(
+      `/v1/incidents/${incidentId}/slack-threads`,
+      { method: 'POST', body: JSON.stringify({ url }) },
+      0,
+    ),
+
+  deleteSlackThread: (incidentId: string, threadId: string) =>
+    apiRequest<{ id: string; deleted: boolean }>(
+      `/v1/incidents/${incidentId}/slack-threads/${threadId}`,
+      { method: 'DELETE' },
+    ),
 
   // Reports
   listReportDrafts: (incidentId: string, draftType?: string) => {

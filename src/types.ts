@@ -44,6 +44,16 @@ export interface IncidentDetail extends Incident {
   notes?: JsonValue[];
   warRooms?: JsonValue[];
   linkedServices?: JsonValue[];
+  /** Slack threads linked manually (Communication tab or add_slack_thread). */
+  slackThreadUrls?: IncidentSlackThreadUrl[];
+}
+
+export interface IncidentSlackThreadUrl {
+  id: string;
+  url: string;
+  channelName: string | null;
+  createdAt: string;
+  threadMessages?: JsonValue[];
 }
 
 export interface SearchResult {
@@ -218,6 +228,17 @@ export interface RelatedResource {
   incidentId: string;
   resource: JsonObject;
   createdAt: string;
+}
+
+export interface SlackThread {
+  id: string;
+  url: string;
+  channelName: string | null;
+  createdAt: string;
+  /** Set when the Slack bot could not read the thread (e.g. 'not_in_channel'); the link is still created. */
+  accessWarning: string | null;
+  /** Number of messages ingested, or null when ingestion was skipped. */
+  ingestedMessageCount: number | null;
 }
 
 export type ZabbixSeverityLabel =
