@@ -125,7 +125,15 @@ import { registerCreateIncidentPhaseCapture } from './createIncidentPhaseCapture
 import { registerDeleteIncidentPhaseCapture } from './deleteIncidentPhaseCapture';
 import { registerGetIncidentPhaseTelemetry } from './getIncidentPhaseTelemetry';
 
-export function registerTools(server: McpServer) {
+export interface RegisterToolsOptions {
+  /**
+   * Register tools that write to the local filesystem (export_incidents). Must be false when
+   * the server runs remotely, where "local" would be the server's disk, not the user's.
+   */
+  localFileAccess?: boolean;
+}
+
+export function registerTools(server: McpServer, { localFileAccess = true }: RegisterToolsOptions = {}) {
   registerGetCurrentTenant(server);
   // Incidents
   registerListIncidents(server);
@@ -189,7 +197,9 @@ export function registerTools(server: McpServer) {
   registerRemoveMember(server);
   // Bulk incidents
   registerBulkDeleteIncidents(server);
-  registerExportIncidents(server);
+  if (localFileAccess) {
+    registerExportIncidents(server);
+  }
   // Blast radius
   registerGetIncidentBlastRadius(server);
   // Services (CMDB)

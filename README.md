@@ -6,6 +6,14 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that c
 
 ---
 
+## Remote connection (no API key)
+
+Incident Lake also hosts this server over Streamable HTTP with OAuth sign-in. Open **User settings → AI tools (MCP)** in Incident Lake to get the server URL, add it to your MCP client (Claude connectors, Cursor, VS Code, Claude Code), and sign in when prompted. The rest of this README covers the local stdio server, which uses an API token instead.
+
+Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry point, which exports `handleStreamableHttpRequest(req, res, parsedBody, { apiUrl, apiToken })`. The tool that writes exports to the local disk (`export_incidents`) is not offered there.
+
+---
+
 ## How It Works
 
 The server runs as a local process on your machine and communicates with the SIGQ backend over HTTP using your API token. MCP clients connect to it via stdio transport.

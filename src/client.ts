@@ -2,6 +2,7 @@ import { access, constants, mkdir, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path';
 import { loadConfig } from './configure';
+import { getScopedCredentials, type Credentials } from './credentials';
 import type {
   JsonValue,
   JsonObject,
@@ -68,7 +69,12 @@ const APPROVE_KNOWLEDGE_DRAFT_TIMEOUT_MS = 120_000;
 const MAX_RETRIES = 3;
 const INITIAL_RETRY_DELAY_MS = 1000;
 
-function getCredentials(): { apiUrl: string; apiToken: string } {
+function getCredentials(): Credentials {
+  // per-request credentials (remote HTTP mode) take priority over everything else
+  const scoped = getScopedCredentials();
+  if (scoped) {
+    return scoped;
+  }
   // env vars take priority (useful for local dev and CI)
   if (process.env.SIGQ_API_TOKEN) {
     return {
