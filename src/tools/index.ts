@@ -41,6 +41,10 @@ import { registerListIncidentTasks } from './listIncidentTasks';
 import { registerCreateIncidentTask } from './createIncidentTask';
 import { registerUpdateIncidentTask } from './updateIncidentTask';
 import { registerDeleteIncidentTask } from './deleteIncidentTask';
+import { registerLinkIncidentTaskExternalIssue } from './linkIncidentTaskExternalIssue';
+import { registerUnlinkIncidentTaskExternalIssue } from './unlinkIncidentTaskExternalIssue';
+import { registerSyncIncidentTaskExternalIssue } from './syncIncidentTaskExternalIssue';
+import { registerCreateIncidentTaskJiraIssue } from './createIncidentTaskJiraIssue';
 // SOP
 import { registerCompleteSopStep } from './completeSopStep';
 import { registerUncompleteSopStep } from './uncompleteSopStep';
@@ -169,6 +173,10 @@ export function registerTools(server: McpServer, { localFileAccess = true }: Reg
   registerCreateIncidentTask(server);
   registerUpdateIncidentTask(server);
   registerDeleteIncidentTask(server);
+  registerLinkIncidentTaskExternalIssue(server);
+  registerUnlinkIncidentTaskExternalIssue(server);
+  registerSyncIncidentTaskExternalIssue(server);
+  registerCreateIncidentTaskJiraIssue(server);
   // Commanders
   registerGetIncidentCommanders(server);
   registerGetCommanderHistory(server);

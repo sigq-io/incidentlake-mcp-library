@@ -203,6 +203,15 @@ export interface IncidentSeveritiesData {
   all: IncidentSeverity[];
 }
 
+export interface IncidentTaskExternalLink {
+  source: 'jira' | 'backlog';
+  issueKey: string;
+  url: string;
+  statusName: string | null;
+  syncedAt: string | null;
+  syncError: string | null;
+}
+
 export interface IncidentTask {
   id: string;
   incidentId: string;
@@ -215,6 +224,8 @@ export interface IncidentTask {
   createdBy: string;
   createdAt: string;
   updatedAt: string;
+  /** Present when the task is linked to a Jira or Backlog issue. */
+  externalLink?: IncidentTaskExternalLink | null;
 }
 
 export interface IncidentService {

@@ -380,6 +380,39 @@ export const api = {
       { method: 'DELETE' },
     ),
 
+  linkIncidentTaskExternalIssue: (
+    incidentId: string,
+    taskId: string,
+    body: { source: 'jira' | 'backlog'; reference: string },
+  ) =>
+    apiRequest<IncidentTask>(`/v1/incidents/${incidentId}/tasks/${taskId}/external-link`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  unlinkIncidentTaskExternalIssue: (incidentId: string, taskId: string) =>
+    apiRequest<IncidentTask>(`/v1/incidents/${incidentId}/tasks/${taskId}/external-link`, {
+      method: 'DELETE',
+    }),
+
+  syncIncidentTaskExternalIssue: (incidentId: string, taskId: string) =>
+    apiRequest<IncidentTask>(`/v1/incidents/${incidentId}/tasks/${taskId}/external-link/sync`, {
+      method: 'POST',
+    }),
+
+  createIncidentTaskJiraIssue: (
+    incidentId: string,
+    taskId: string,
+    body: { projectKey: string; issueType?: string },
+  ) =>
+    apiRequest<IncidentTask>(
+      `/v1/incidents/${incidentId}/tasks/${taskId}/external-link/jira-issue`,
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+    ),
+
   // SOP completions
   completeSopStep: (incidentId: string, stepId: string, body: JsonObject) =>
     apiRequest<JsonObject>(`/v1/incidents/${incidentId}/sop-completions/${stepId}`, {
