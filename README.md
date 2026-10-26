@@ -99,6 +99,12 @@ Add to `~/.cursor/mcp.json` or your workspace `.cursor/mcp.json`:
 
 Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with 6 tools available.
 
+## Approval for destructive operations
+
+Tools that delete or change existing data (`delete_*`, `remove_*`, `update_*`, `replace_*`, `upsert_*`, `resolve_incident`, `reopen_incident`, `publish_*`, `cancel_*`, `approve_*`, `dismiss_*`, `unlink_*`, `uncomplete_*`, `sync_*`, `save_*`) ask you to approve each call before anything is changed. Clients that support MCP form elicitation show an approval dialog with the tool's arguments; the call runs only if you tick **Approve** and accept. These tools are also marked `destructiveHint: true`, so clients without elicitation support (and the remote HTTP server) fall back to the client's own tool-call confirmation.
+
+---
+
 ## Example Prompts
 
 - "List the 5 most recent ongoing incidents"
