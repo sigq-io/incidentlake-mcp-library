@@ -3,6 +3,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
 import { registerTools, type RegisterToolsOptions } from './tools/index';
 import { registerResources } from './resources/index';
+import { requireApprovalForDangerousTools } from './approval';
 import { runWithCredentials, type Credentials } from './credentials';
 
 export type { Credentials, RegisterToolsOptions };
@@ -14,6 +15,7 @@ export function createIncidentLakeMcpServer(options: RegisterToolsOptions = {}):
     version: '0.7.0',
   });
 
+  requireApprovalForDangerousTools(server);
   registerTools(server, options);
   registerResources(server);
 
