@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema, optionalNullableEmailArraySchema } from '../coerceArrays';
@@ -74,7 +74,7 @@ export function registerCreateIncident(server: McpServer) {
     {
       description:
         'Create a new incident in Incident Lake. Use this when a user reports a new outage, degradation, or operational issue and wants it tracked in the system.',
-      inputSchema: inputSchema as z.ZodType<CreateIncidentInput>,
+      inputSchema: z.object(inputSchema.shape),
     },
     async (input: CreateIncidentInput) => {
       try {

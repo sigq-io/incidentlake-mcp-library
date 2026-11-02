@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -22,7 +22,7 @@ export function registerAddInstanaRelatedResource(server: McpServer) {
         includeDrills: zIncludeDrills,
         eventId: z.string().min(1).describe("Instana event's eventId"),
         name: z.string().optional().describe('Event name, used as the resource title'),
-      }) as z.ZodType<AddInstanaRelatedResourceInput>,
+      }),
     },
     async (input: AddInstanaRelatedResourceInput) => {
       try {

@@ -6,7 +6,8 @@
     "outDir": "dist",
     "rootDir": "src",
     "esModuleInterop": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
+    "types": ["node"],
     "strict": true,
     "skipLibCheck": true,
     "resolveJsonModule": true

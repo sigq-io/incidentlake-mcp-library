@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -24,7 +24,7 @@ export function registerAddGrafanaRelatedResource(server: McpServer) {
         uid: z.string().min(1).describe('Grafana dashboard or alert rule uid'),
         kind: z.enum(['dashboard', 'alert']).describe('Whether the uid is a dashboard or alert rule'),
         name: z.string().optional().describe('Title, used as the resource title'),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {

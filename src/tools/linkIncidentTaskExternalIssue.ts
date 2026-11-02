@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -29,7 +29,7 @@ export function registerLinkIncidentTaskExternalIssue(server: McpServer) {
           .string()
           .min(1)
           .describe('Issue URL or key (Jira: KAN-1 or url, ServiceNow: INC0010001 or url)'),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {

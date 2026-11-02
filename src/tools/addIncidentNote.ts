@@ -1,15 +1,8 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
 import type { JsonObject } from '../types';
-
-type AddIncidentNoteInput = {
-  incidentId: string;
-  includeDrills?: boolean;
-  content: string;
-  createdBy?: string;
-};
 
 const inputSchema = z.object({
   incidentId: z.string().uuid().describe('The UUID of the incident to add the note to'),
@@ -27,7 +20,7 @@ const inputSchema = z.object({
     .describe(
       'Optional tenant member UUID to attribute the note to. If omitted, the default tenant member is used.',
     ),
-}) as z.ZodType<AddIncidentNoteInput>;
+});
 
 export function registerAddIncidentNote(server: McpServer) {
   server.registerTool(
@@ -35,7 +28,7 @@ export function registerAddIncidentNote(server: McpServer) {
     {
       description:
         'Add a note to an existing incident. Use this when a user wants to log an update, observation, error log, or any text information against a specific incident.',
-      inputSchema,
+      inputSchema: z.object(inputSchema.shape),
     },
     async (input) => {
       try {

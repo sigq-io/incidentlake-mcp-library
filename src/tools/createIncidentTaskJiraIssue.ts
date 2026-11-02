@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -27,7 +27,7 @@ export function registerCreateIncidentTaskJiraIssue(server: McpServer) {
           .string()
           .optional()
           .describe("Jira issue type name (defaults to the project's default type)"),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {

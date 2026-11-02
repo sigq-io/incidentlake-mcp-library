@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { TASK_STATUSES, zActivityType, zIncludeDrills, zRelatedIncidents, zTaskStatus } from '../incidentZod';
@@ -58,7 +58,7 @@ export function registerCreateIncidentTask(server: McpServer) {
         relatedIncidents: zRelatedIncidents,
         activityType: zActivityType,
         includeDrills: zIncludeDrills,
-      }) as z.ZodType<CreateIncidentTaskInput>,
+      }),
     },
     async (input: CreateIncidentTaskInput) => {
       try {

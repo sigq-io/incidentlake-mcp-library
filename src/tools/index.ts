@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { registerGetCurrentTenant } from './getCurrentTenant';
 import { registerListIncidents } from './listIncidents';
 import { registerGetIncident } from './getIncident';

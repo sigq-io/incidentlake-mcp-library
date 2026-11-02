@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { DRILL_EXERCISE_TYPES, DRILL_HAZARDS, DRILL_INDUSTRIES } from '../types';

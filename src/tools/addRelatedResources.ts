@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -22,7 +22,7 @@ export function registerAddRelatedResources(server: McpServer) {
         resourceIds: requiredNonEmptyStringArraySchema.describe(
           'One or more external_web_resources UUIDs to link to the incident',
         ),
-      }) as z.ZodType<AddRelatedResourcesInput>,
+      }),
     },
     async (input: AddRelatedResourcesInput) => {
       try {

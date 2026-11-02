@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -28,7 +28,7 @@ export function registerAddRollbarRelatedResource(server: McpServer) {
           ])
           .describe('Rollbar item number (counter)'),
         name: z.string().optional().describe('Item title, used as the resource title'),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {
