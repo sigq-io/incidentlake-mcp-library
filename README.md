@@ -10,7 +10,39 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that c
 
 Incident Lake also hosts this server over Streamable HTTP with OAuth sign-in. Open **User settings → AI tools (MCP)** in Incident Lake to get the server URL, add it to your MCP client (Claude connectors, Cursor, VS Code, Claude Code), and sign in when prompted. The rest of this README covers the local stdio server, which uses an API token instead.
 
-Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry point, which exports `handleStreamableHttpRequest(req, res, parsedBody, { apiUrl, apiToken })`. The tool that writes exports to the local disk (`export_incidents`) is not offered there.
+Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry point, which exports `handleStreamableHttpRequest(req, res, parsedBody, { apiUrl, apiToken })`. Tools that read or write the local disk (`export_incidents` and the file upload/download tools) are not offered there. A `toolsets` query parameter on the request URL (for example `?toolsets=default,specs`) chooses the [tool groups](#tool-groups) for that client.
+
+---
+
+## Tool groups
+
+The core tools stay registered no matter what: incidents, notes, tags, checklists, severities, tasks, commanders, related resources, reports, members, the CMDB service graph (`save_cmdb_graph_batch` and the service and dependency tools), risks, integrations, the response timeline, drills and knowledge. These groups only add Public API operations that had no tool yet. Group names match Incident Lake features.
+
+| Group | Default | Adds |
+| --- | --- | --- |
+| `incidents` | yes | ITIL fields, AI field fill, severity detection, checklist templates, roles, task reports, linked changes, the emergency chat room |
+| `task_board` | yes | Task board projects, tasks, scopes, comments and files |
+| `problems` | | Problem candidates, risk history and links, improvement tasks |
+| `knowledge` | | Semantic search, versions, CSV import, classification, and the evidence library |
+| `changes` | | Changes, releases, deployments, GitHub sync |
+| `specs` | | Specification spaces, pages, reviews, change requests, sources, judgements |
+| `emergency` | | Emergency plans, contacts, activations, consultations |
+| `services` | | Service incident counts, ITIL attributes, dependency extraction, NetBox, the service catalog, locations and business operations |
+| `settings` | | Workflow automations and tenant configuration (templates, roles, severity criteria, RBAC, ITIL settings) |
+
+Nothing is required. With `SIGQ_TOOLSETS` unset, the two default groups are added on top of the core tools. `all` adds every group, `none` keeps only the core tools, and `default,specs` adds one more group.
+
+```json
+{
+  "mcpServers": {
+    "incidentlake-mcp": {
+      "command": "npx",
+      "args": ["@sigq/incidentlake-mcp-library"],
+      "env": { "SIGQ_TOOLSETS": "default,specs" }
+    }
+  }
+}
+```
 
 ---
 
@@ -97,7 +129,7 @@ Add to `~/.cursor/mcp.json` or your workspace `.cursor/mcp.json`:
 
 ## Step 3 — Restart your MCP client
 
-Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with 6 tools available.
+Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with its tools.
 
 ## Example Prompts
 

@@ -168,16 +168,24 @@ import { registerGenerateDrillDebrief } from './generateDrillDebrief';
 import { registerGetDrillDebrief } from './getDrillDebrief';
 import { registerAcceptDrillImprovement } from './acceptDrillImprovement';
 import { registerDismissDrillImprovement } from './dismissDrillImprovement';
+import { registerApiTools } from './api/index';
+import { DEFAULT_TOOLSETS, type Toolset } from '../toolsets';
 
 export interface RegisterToolsOptions {
   /**
-   * Register tools that write to the local filesystem (export_incidents). Must be false when
-   * the server runs remotely, where "local" would be the server's disk, not the user's.
+   * Register tools that read or write the local filesystem (export_incidents, file uploads and
+   * downloads). Must be false when the server runs remotely, where "local" would be the server's
+   * disk, not the user's.
    */
   localFileAccess?: boolean;
+  /** Optional Public API tool groups on top of the always-on tools. Defaults to DEFAULT_TOOLSETS. */
+  toolsets?: ReadonlySet<Toolset>;
 }
 
-export function registerTools(server: McpServer, { localFileAccess = true }: RegisterToolsOptions = {}) {
+export function registerTools(
+  server: McpServer,
+  { localFileAccess = true, toolsets = new Set(DEFAULT_TOOLSETS) }: RegisterToolsOptions = {},
+) {
   registerGetCurrentTenant(server);
   // Incidents
   registerListIncidents(server);
@@ -352,4 +360,6 @@ export function registerTools(server: McpServer, { localFileAccess = true }: Reg
   registerListPendingKnowledgeDrafts(server);
   registerApproveKnowledgeDraft(server);
   registerDismissKnowledgeDraft(server);
+  // Public API tool groups (see toolsets.ts)
+  registerApiTools(server, toolsets, { localFileAccess });
 }
