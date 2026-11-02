@@ -145,12 +145,15 @@ async function fetchWithTimeout(
  * failures are retried up to maxRetries.
  * @param timeoutMs Overrides REQUEST_TIMEOUT_MS for a call whose server work (translation,
  * embedding, a large download) can outlast the default.
+ * @param emptyAsUndefined Return `undefined` instead of `null` for an empty response body, so a
+ * caller can tell it from a JSON `null`.
  */
 async function apiRequest<T>(
   path: string,
   options: RequestInit = {},
   maxRetries: number = MAX_RETRIES,
   timeoutMs: number = REQUEST_TIMEOUT_MS,
+  emptyAsUndefined = false,
 ): Promise<T> {
   const { apiUrl, apiToken } = getCredentials();
 
@@ -185,7 +188,7 @@ async function apiRequest<T>(
       }
 
       const text = await response.text();
-      if (!text) return null as T;
+      if (!text) return (emptyAsUndefined ? undefined : null) as T;
       return unwrapDataPayload<T>(JSON.parse(text) as JsonValue);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
@@ -1295,6 +1298,23 @@ export async function uniqueOutputPath(desiredPath: string): Promise<string> {
   throw new Error(`Could not find a free filename near ${desiredPath}`);
 }
 
+/**
+ * Writes `data` to `desiredPath`, or to `name (1).ext`, `name (2).ext`, ... when taken. Each
+ * attempt creates the file exclusively, so concurrent writers never overwrite one another.
+ */
+export async function writeNewFile(desiredPath: string, data: Buffer): Promise<string> {
+  for (let n = 0; n < 1000; n++) {
+    const candidate = n === 0 ? desiredPath : withNumericSuffix(desiredPath, n);
+    try {
+      await writeFile(candidate, data, { flag: 'wx' });
+      return candidate;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+    }
+  }
+  throw new Error(`Could not find a free filename near ${desiredPath}`);
+}
+
 function sanitizeFilename(name: string): string {
   const sanitised = Array.from(name.trim())
     .filter((ch) => ch.charCodeAt(0) > 31)
@@ -1367,37 +1387,40 @@ export async function exportIncidentsToFile(
   );
   // Keep extension aligned with the resolved format even if disposition is odd.
   const baseName = preferredName.replace(/\.(csv|xlsx)$/i, '') + `.${format}`;
-  const desiredPath = join(dir, baseName);
-  const finalPath = await uniqueOutputPath(desiredPath);
-
-  await writeFile(finalPath, buffer);
+  const finalPath = await writeNewFile(join(dir, baseName), buffer);
 
   return { path: finalPath, bytes: buffer.length, contentType, format };
 }
 
 // Generic Public API access for the declarative tools in tools/api.
 
+/** Resolves to `undefined` for an empty response body and to `null` for a JSON `null`. */
 export function callPublicApi<T = JsonValue>(
   path: string,
   options: RequestInit = {},
   maxRetries: number = MAX_RETRIES,
   timeoutMs: number = REQUEST_TIMEOUT_MS,
-): Promise<T> {
-  return apiRequest<T>(path, options, maxRetries, timeoutMs);
+): Promise<T | undefined> {
+  return apiRequest<T | undefined>(path, options, maxRetries, timeoutMs, true);
 }
 
 const FILE_TRANSFER_TIMEOUT_MS = 120_000;
 /** The largest file any upload endpoint accepts (evidence PDFs); the API enforces the per-endpoint limit. */
 const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
+function hasHiddenSegment(path: string): boolean {
+  return path.split(/[\\/]/).some((segment) => segment.startsWith('.') && segment !== '.' && segment !== '..');
+}
+
 /**
  * Rejects local files the model should never send to the tenant even when asked to: anything
  * under a hidden directory or itself hidden (`~/.ssh`, `.env`, `.aws/credentials`), and anything
- * that is not a regular file. The path is resolved through symlinks first so a link cannot bypass it.
+ * that is not a regular file. Both the requested path and its symlink target are checked, so
+ * neither `~/.env -> ~/dotfiles/env` nor `~/env -> ~/.ssh/id_rsa` gets through.
  */
 async function assertUploadable(resolved: string): Promise<string> {
   const real = await realpath(resolved);
-  if (real.split(/[\\/]/).some((segment) => segment.startsWith('.') && segment !== '.' && segment !== '..')) {
+  if (hasHiddenSegment(resolved) || hasHiddenSegment(real)) {
     throw new Error(`Refusing to upload hidden file or directory content: ${resolved}`);
   }
   const info = await stat(real);
@@ -1415,7 +1438,7 @@ export async function uploadFilesToPublicApi(
   fileField: string,
   filePaths: string[],
   fields: Record<string, string>,
-): Promise<JsonValue> {
+): Promise<JsonValue | undefined> {
   const { apiUrl, apiToken } = getCredentials();
   const form = new FormData();
   for (const filePath of filePaths) {
@@ -1432,7 +1455,7 @@ export async function uploadFilesToPublicApi(
   );
   const text = await response.text();
   if (!response.ok) throw new Error(`API error ${response.status} for ${path}: ${text}`);
-  return text ? unwrapDataPayload<JsonValue>(JSON.parse(text) as JsonValue) : null;
+  return text ? unwrapDataPayload<JsonValue>(JSON.parse(text) as JsonValue) : undefined;
 }
 
 /** Downloads a file into `outputDirectory`, keeping the server's filename and never overwriting. */
@@ -1453,15 +1476,15 @@ export async function downloadFileFromPublicApi(
   }
   const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
   const buffer = Buffer.from(await response.arrayBuffer());
-  const dir = resolveExportDirectory(outputDirectory);
+  const dir = resolveOutputPath(outputDirectory);
   await mkdir(dir, { recursive: true });
   const served = parseFilenameFromDisposition(response.headers.get('content-disposition'), fallbackName);
   // sanitizeFilename strips separators, but "." or ".." would still point outside the directory.
   const name = served === '.' || served === '..' || served.startsWith('.') ? fallbackName : served;
-  const finalPath = await uniqueOutputPath(join(dir, name));
-  if (dirname(resolve(finalPath)) !== resolve(dir)) {
-    throw new Error(`Refusing to write outside ${dir}: ${finalPath}`);
+  const desiredPath = join(dir, name);
+  if (dirname(resolve(desiredPath)) !== resolve(dir)) {
+    throw new Error(`Refusing to write outside ${dir}: ${desiredPath}`);
   }
-  await writeFile(finalPath, buffer);
+  const finalPath = await writeNewFile(desiredPath, buffer);
   return { path: finalPath, bytes: buffer.length, contentType };
 }

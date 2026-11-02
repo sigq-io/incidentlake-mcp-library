@@ -66,6 +66,7 @@ export const knowledgeTools: ApiToolDefinition[] = [
     description:
       'Make an earlier version the current content of a knowledge item. The restore is recorded as a new version.',
     method: 'POST',
+    destructive: true,
     path: '/v1/knowledge/{knowledgeId}/versions/{versionNumber}/restore',
     input: {
       knowledgeId,

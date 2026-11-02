@@ -146,6 +146,7 @@ export const evidenceTools: ApiToolDefinition[] = [
     description:
       'Make this version the current one of its document series (searches and lists use current versions).',
     method: 'POST',
+    destructive: true,
     path: '/v1/evidence-library/documents/{documentId}/current',
     input: { documentId },
   },

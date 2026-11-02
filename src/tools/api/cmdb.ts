@@ -74,6 +74,7 @@ export const cmdbTools: ApiToolDefinition[] = [
     description:
       'Extract service dependencies from text (architecture notes, runbooks) and add them to the CMDB graph. Returns the numbers of edges created and updated. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/service-dependencies/extract',
     input: {
       content: z.string().min(1).max(50000).describe('Text describing the services and their dependencies'),
@@ -86,6 +87,7 @@ export const cmdbTools: ApiToolDefinition[] = [
     description:
       'Start rebuilding the CMDB dependency graph from all knowledge sources in the background; returns immediately with status processing. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/service-dependencies/build-graph',
     input: {
       additionalContent: z.string().max(50000).optional().describe('Extra text to analyse along with the knowledge sources'),

@@ -194,6 +194,7 @@ export const emergencyTools: ApiToolDefinition[] = [
     description:
       'Approve draft emergency contacts in bulk (e.g. after reviewing an extraction). Returns how many changed; non-draft ids are ignored.',
     method: 'POST',
+    destructive: true,
     path: '/v1/emergency/contacts/approve',
     input: {
       contactIds: requiredNonEmptyStringArraySchema.describe('Emergency contact UUIDs to approve (max 1000)'),

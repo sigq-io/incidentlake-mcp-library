@@ -79,6 +79,7 @@ export const businessContinuityTools: ApiToolDefinition[] = [
     description:
       'Place CMDB services in a location, or remove them from any location with locationId null. Returns the number of services updated.',
     method: 'POST',
+    destructive: true,
     path: '/v1/locations/assign-services',
     input: {
       serviceIds: requiredNonEmptyStringArraySchema.describe('CMDB service UUIDs (max 5000)'),

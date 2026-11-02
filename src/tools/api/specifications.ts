@@ -151,6 +151,7 @@ export const specificationTools: ApiToolDefinition[] = [
     name: 'move_spec_node',
     description: 'Move a page or category under another category (or to the top level) at a position among its new siblings.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-spaces/{spaceId}/nodes/{nodeId}/move',
     retries: 2,
     input: {
@@ -174,6 +175,7 @@ export const specificationTools: ApiToolDefinition[] = [
     description:
       'Confirm several Drafts of a space as the official specification at once (owners and admins). Returns approved and skipped revision IDs.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-spaces/{spaceId}/pending/approve',
     retries: 2,
     input: {
@@ -195,6 +197,7 @@ export const specificationTools: ApiToolDefinition[] = [
     description:
       'Save a new revision of a page (a Draft unless approve). Pass basedOnRevisionId, the revision you edited: a save based on an older revision than the latest is refused so newer text is not lost.',
     method: 'PUT',
+    idempotent: false,
     path: '/v1/spec-pages/{pageId}',
     retries: 0,
     input: {
@@ -235,6 +238,7 @@ export const specificationTools: ApiToolDefinition[] = [
     name: 'approve_spec_revision',
     description: 'Confirm a Draft revision as the correct (official) specification. Owners and admins only.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-revisions/{revisionId}/approve',
     retries: 2,
     input: { revisionId },
@@ -243,6 +247,7 @@ export const specificationTools: ApiToolDefinition[] = [
     name: 'reject_spec_revision',
     description: 'Reject a Draft revision of a specification page.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-revisions/{revisionId}/reject',
     input: {
       revisionId,
@@ -299,6 +304,7 @@ export const specificationTools: ApiToolDefinition[] = [
     description:
       'Write the release notes of a version from its changes since the previous version and save them on the version. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-spaces/{spaceId}/tags/{tagId}/release-notes',
     timeoutMs: AI_TIMEOUT_MS,
     input: { spaceId, tagId, language },
@@ -628,6 +634,7 @@ export const specificationTools: ApiToolDefinition[] = [
     name: 'set_spec_change_request_status',
     description: 'Reject, withdraw (closed) or reopen a change request.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-change-requests/{changeRequestId}/status',
     retries: 2,
     input: {
@@ -640,6 +647,7 @@ export const specificationTools: ApiToolDefinition[] = [
     description:
       'Merge a change request into the official specification (owners and admins). With createChange, also opens a change record for it. Returns the result and changeId.',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-change-requests/{changeRequestId}/apply',
     input: {
       changeRequestId,
@@ -650,6 +658,7 @@ export const specificationTools: ApiToolDefinition[] = [
     name: 'rebase_spec_proposal',
     description: "Rebase a change request proposal onto the page's current official revision after the page changed.",
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-change-requests/{changeRequestId}/proposals/{proposalId}/rebase',
     input: {
       changeRequestId,
@@ -661,6 +670,7 @@ export const specificationTools: ApiToolDefinition[] = [
     description:
       'Estimate the difficulty and impact of a change request and save the estimate on it. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/spec-change-requests/{changeRequestId}/impact',
     timeoutMs: AI_TIMEOUT_MS,
     input: { changeRequestId, language },

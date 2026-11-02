@@ -194,6 +194,7 @@ export const changeTools: ApiToolDefinition[] = [
     name: 'sync_changes_from_github',
     description: 'Sync changes, releases and deployments from GitHub now and return the result. Fails when a sync is already running.',
     method: 'POST',
+    destructive: true,
     path: '/v1/change-settings/sync',
     timeoutMs: 120_000,
   },

@@ -124,6 +124,7 @@ export const improvementTools: ApiToolDefinition[] = [
     description:
       'Generate a draft known-error knowledge item from a risk and its linked incidents; replaces an earlier pending draft and opens a review task. The risk must have a root cause recorded, otherwise fails with ROOT_CAUSE_REQUIRED. Returns `knowledgeId`. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/risks/{riskId}/known-error-draft',
     input: { riskId },
     timeoutMs: AI_TIMEOUT_MS,

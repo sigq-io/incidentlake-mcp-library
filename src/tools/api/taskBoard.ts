@@ -94,6 +94,7 @@ export const taskBoardTools: ApiToolDefinition[] = [
     description:
       'Turn an AI-suggested improvement task (see list_improvement_tasks) into a task board task. Omitted fields come from the suggestion, which leaves the inbox as adopted. Needs improvement tasks write.',
     method: 'POST',
+    destructive: true,
     path: '/v1/task-board/suggestions/{improvementTaskId}/adopt',
     input: {
       improvementTaskId: uuid('Improvement task'),
@@ -144,6 +145,7 @@ export const taskBoardTools: ApiToolDefinition[] = [
     description:
       'Shift unfinished tasks of a project so none starts before the tasks it depends on are due, keeping each duration. Returns the board and how many tasks were rescheduled.',
     method: 'POST',
+    destructive: true,
     path: '/v1/task-board/projects/{projectId}/auto-schedule',
     input: { projectId },
   },
@@ -193,6 +195,7 @@ export const taskBoardTools: ApiToolDefinition[] = [
     name: 'move_task_board_task',
     description: 'Move a task on the board to a column and position.',
     method: 'POST',
+    destructive: true,
     path: '/v1/task-board/tasks/{taskId}/move',
     retries: 2,
     input: {
@@ -286,6 +289,7 @@ export const taskBoardTools: ApiToolDefinition[] = [
     description:
       "Lock a scope's current tasks and points as its baseline, replacing any earlier baseline and clearing its scope-creep log. From then on, tasks added, removed or re-estimated are logged as scope creep.",
     method: 'POST',
+    destructive: true,
     path: '/v1/task-board/scopes/{scopeId}/baseline',
     input: { scopeId },
   },

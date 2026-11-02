@@ -132,6 +132,7 @@ export const adminTools: ApiToolDefinition[] = [
     description:
       'Create the criteria definition for a severity level, or overwrite it when the level already has one (one per level). Admin only.',
     method: 'POST',
+    destructive: true,
     path: '/v1/severity-criteria-definitions',
     input: {
       severityLevel: z.number().int().min(1).max(5).describe('Severity level 1 (most severe) .. 5'),
@@ -564,6 +565,7 @@ export const adminTools: ApiToolDefinition[] = [
     description:
       'Add a direct allow or deny rule for a member on an incident RBAC tag (an identical existing rule is updated). Admin only.',
     method: 'POST',
+    destructive: true,
     path: '/v1/rbac-managements',
     input: {
       tenantMemberId: z.string().uuid().describe('Tenant member UUID the rule applies to'),
@@ -591,6 +593,7 @@ export const adminTools: ApiToolDefinition[] = [
     description:
       "Replace all of a member's direct RBAC rules with the given list. An empty list clears them. Admin only.",
     method: 'POST',
+    destructive: true,
     path: '/v1/rbac-managements/member/{memberId}/batch',
     input: {
       memberId,

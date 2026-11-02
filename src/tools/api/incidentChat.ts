@@ -29,6 +29,7 @@ export const incidentChatTools: ApiToolDefinition[] = [
     name: 'close_incident_chat_room',
     description: 'Close the emergency chat room of an incident. Messages stay readable.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/chat-room/close',
     input: { incidentId },
   },

@@ -32,6 +32,13 @@ export interface ApiToolDefinition {
   upload?: { field: string; multiple?: boolean };
   /** Binary download saved to a local directory (local stdio mode only). */
   download?: { fallbackName: string };
+  /**
+   * Overrides destructiveHint, which defaults to true for PUT, PATCH and DELETE and false for POST.
+   * Set it on a POST that changes or replaces existing data (approve, close, merge, move, upsert...).
+   */
+  destructive?: boolean;
+  /** Overrides idempotentHint, which defaults to true for GET, PUT, PATCH and DELETE (e.g. a PUT that saves a new revision). */
+  idempotent?: boolean;
 }
 
 const PLACEHOLDER = /\{(\w+)\}/g;
@@ -121,6 +128,19 @@ function inputSchemaOf(def: ApiToolDefinition): z.ZodRawShape {
   return shape;
 }
 
+type ToolAnnotations = { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean };
+
+/** A download is a GET that writes a new local file on every call, so it is neither read-only nor idempotent. */
+function annotationsOf(def: ApiToolDefinition): ToolAnnotations {
+  if (def.download) return { readOnlyHint: false, destructiveHint: false, idempotentHint: false };
+  if (def.method === 'GET') return { readOnlyHint: true, destructiveHint: false, idempotentHint: true };
+  return {
+    readOnlyHint: false,
+    destructiveHint: def.destructive ?? def.method !== 'POST',
+    idempotentHint: def.idempotent ?? def.method !== 'POST',
+  };
+}
+
 type ToolResult = { content: { type: 'text'; text: string }[]; isError?: boolean };
 
 /**
@@ -132,7 +152,7 @@ type RegisterLooseTool = (
   config: {
     description: string;
     inputSchema: z.ZodObject;
-    annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean };
+    annotations: ToolAnnotations;
   },
   callback: (input: Record<string, unknown>) => Promise<ToolResult>,
 ) => void;
@@ -144,16 +164,13 @@ export function registerApiTool(server: McpServer, def: ApiToolDefinition): void
     {
       description: def.description,
       inputSchema: z.object(inputSchemaOf(def)),
-      annotations: {
-        readOnlyHint: def.method === 'GET',
-        destructiveHint: def.method === 'DELETE',
-        idempotentHint: def.method !== 'POST',
-      },
+      annotations: annotationsOf(def),
     },
     async (input) => {
       try {
         const data = await runApiTool(def, input);
-        return { content: [{ type: 'text' as const, text: JSON.stringify(data ?? { ok: true }, null, 2) }] };
+        const result = data === undefined ? { ok: true } : data;
+        return { content: [{ type: 'text' as const, text: JSON.stringify(result, null, 2) }] };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
         return {

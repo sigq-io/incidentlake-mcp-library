@@ -56,6 +56,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Mark AI-filled incident fields as checked by a person. Omit fieldKeys to verify every AI-filled field. Returns the verified keys and the updated field list.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/field-provenance/verify',
     query: ['includeDrills'],
     input: {
@@ -71,6 +72,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Accept the AI suggestion on one incident field flagged for review (a later note disagreed with the AI value), writing the suggested value to the incident. Returns the updated field list.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/field-provenance/apply-suggestion',
     query: ['includeDrills'],
     input: {
@@ -84,6 +86,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       "Fill an incident's empty fields (name, severity, category, ITIL fields, services, response timestamps, roles) from its notes and chat now, also refreshing earlier AI values nobody has verified. Returns filled, flagged, skippedReason and the fields. (AI; consumes credits)",
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/autofill',
     query: ['includeDrills'],
     timeoutMs: AI_TIMEOUT_MS,
@@ -152,6 +155,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Close a resolved incident with a resolution code and root cause summary. Fails unless the incident status is resolved.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/close',
     query: ['includeDrills'],
     input: {
@@ -251,6 +255,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Dismiss the AI "looks done" suggestion on one checklist step without completing it; the step is not re-flagged until the cooldown passes.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/sop-completions/{stepId}/dismiss-suggestion',
     query: ['includeDrills'],
     input: {
@@ -334,6 +339,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Generate draft task suggestions for an incident from its published summary, timeline and notes, replacing earlier unaccepted generated drafts and reordering existing tasks. Returns suggested false with a reason when there is no published summary or timeline. (AI; consumes credits)',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/suggest',
     query: ['includeDrills'],
     timeoutMs: AI_TIMEOUT_MS,
@@ -357,6 +363,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Submit a completion report for an incident task as the token owner and move the task to in_review. Reviewers are notified; approve or reject it afterwards.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/{taskId}/reports',
     query: ['includeDrills'],
     input: {
@@ -379,6 +386,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       "Approve an incident task's report and mark the task done. Tenant admin only. The report author is notified. Returns the updated task.",
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/{taskId}/approve',
     query: ['includeDrills'],
     input: {
@@ -394,6 +402,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       "Reject an incident task's report and send the task back to todo. The report author is notified. Returns the updated task.",
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/{taskId}/reject',
     query: ['includeDrills'],
     input: {
@@ -409,6 +418,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Cancel the approval of a done incident task, moving it back to in_review without recording a review. Returns the updated task.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/{taskId}/unapprove',
     query: ['includeDrills'],
     input: { incidentId, taskId, includeDrills },
@@ -418,6 +428,7 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     description:
       'Complete (done) or cancel an incident task directly with a report, skipping review. targetStatus done requires a tenant admin; cancelled does not. Returns the updated task.',
     method: 'POST',
+    destructive: true,
     path: '/v1/incidents/{incidentId}/tasks/{taskId}/complete',
     query: ['includeDrills'],
     input: {
