@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
@@ -62,7 +62,7 @@ const inputSchema = z.object({
     .optional()
     .describe('Category filter (system, security, operational). Match any listed value.'),
   includeDrills: zIncludeDrills,
-}) as z.ZodType<ListIncidentsInput>;
+});
 
 export function registerListIncidents(server: McpServer) {
   server.registerTool(
@@ -70,7 +70,7 @@ export function registerListIncidents(server: McpServer) {
     {
       description:
         'List incidents for the tenant with optional filtering, sorting, and cursor-based pagination. Use this to browse all incidents or narrow down by status, severity, or source.',
-      inputSchema,
+      inputSchema: z.object(inputSchema.shape),
     },
     async (input: ListIncidentsInput) => {
       try {

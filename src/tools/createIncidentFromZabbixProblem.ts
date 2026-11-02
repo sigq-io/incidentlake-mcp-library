@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
@@ -34,7 +34,7 @@ export function registerCreateIncidentFromZabbixProblem(server: McpServer) {
     {
       description:
         'Create a new incident and link a Zabbix problem to it in one step. Convenience wrapper around create_incident + add_zabbix_related_resource — use this when a user wants to turn a Zabbix alert (from search_zabbix_problems) directly into a tracked incident.',
-      inputSchema,
+      inputSchema: z.object(inputSchema.shape),
     },
     async (input) => {
       const incidentBody: JsonObject = { name: input.name };

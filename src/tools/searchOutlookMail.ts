@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 
@@ -18,7 +18,7 @@ export function registerSearchOutlookMail(server: McpServer) {
         query: z.string().min(1).describe('Keyword to match against subject, body or sender'),
         hoursBack: z.number().int().positive().optional().describe('Only include mail received within this many hours'),
         limit: z.number().int().min(1).max(50).optional().describe('Max results (default 10, max 50)'),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {

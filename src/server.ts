@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http';
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from "@modelcontextprotocol/node";
+import { McpServer } from "@modelcontextprotocol/server";
 import { registerTools, type RegisterToolsOptions } from './tools/index';
 import { registerResources } from './resources/index';
 import { runWithCredentials, type Credentials } from './credentials';
@@ -32,7 +32,7 @@ export async function handleStreamableHttpRequest(
   credentials: Credentials,
 ): Promise<void> {
   const server = createIncidentLakeMcpServer({ localFileAccess: false });
-  const transport = new StreamableHTTPServerTransport({
+  const transport = new NodeStreamableHTTPServerTransport({
     sessionIdGenerator: undefined,
     enableJsonResponse: true,
   });
