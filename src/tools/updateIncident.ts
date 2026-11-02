@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNullableEmailArraySchema } from '../coerceArrays';
@@ -84,7 +84,7 @@ export function registerUpdateIncident(server: McpServer) {
     {
       description:
         'Update an incident via Public API (PATCH /v1/incidents/{id}). Send at least one field: name, status (including false_positive), category, summary, timeline, postmortem; timestamps (ISO 8601 or null to clear); assigneeEmails; severity with optional severityReason; rbacTagIds. Set includeDrills when the incident is a drill.',
-      inputSchema: inputSchema as z.ZodType<UpdateIncidentToolInput>,
+      inputSchema: z.object(inputSchema.shape),
     },
     async (input: UpdateIncidentToolInput) => {
       try {

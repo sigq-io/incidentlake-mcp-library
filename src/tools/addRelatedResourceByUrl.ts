@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -22,7 +22,7 @@ export function registerAddRelatedResourceByUrl(server: McpServer) {
           .string()
           .min(1)
           .describe('Jira, Notion, Datadog, or Google Drive URL to link'),
-      }) as z.ZodType<AddRelatedResourceByUrlInput>,
+      }),
     },
     async (input: AddRelatedResourceByUrlInput) => {
       try {

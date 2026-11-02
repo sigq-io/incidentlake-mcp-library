@@ -1,5 +1,6 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { api } from '../client';
+import { z } from "zod";
 
 export function registerListRbacTags(server: McpServer) {
   server.registerTool(
@@ -7,7 +8,7 @@ export function registerListRbacTags(server: McpServer) {
     {
       description:
         'List all RBAC tags defined for the tenant (GET /v1/rbac-tags). Returns id, name, and description for each tag. Use the id values in rbacTagIds when creating or updating incidents.',
-      inputSchema: {},
+      inputSchema: z.object({}),
     },
     async () => {
       try {

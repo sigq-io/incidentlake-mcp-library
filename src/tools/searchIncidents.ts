@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { optionalNonEmptyStringArraySchema } from '../coerceArrays';
@@ -36,7 +36,7 @@ export function registerSearchIncidents(server: McpServer) {
           .optional()
           .describe('Category filter (system, security, operational). Match any listed value.'),
         includeDrills: zIncludeDrills,
-      }) as z.ZodType<SearchIncidentsInput>,
+      }),
     },
     async (input: SearchIncidentsInput) => {
       try {

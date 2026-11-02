@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -13,8 +13,7 @@ const VALID_ACTION_TYPES = [
   'update_postmortem',
 ] as const;
 
-const inputSchema = z
-  .object({
+const inputObject = z.object({
     incidentId: z.string().uuid().describe('The UUID of the incident'),
     includeDrills: zIncludeDrills,
     scheduleType: z
@@ -65,8 +64,9 @@ const inputSchema = z
       .string()
       .optional()
       .describe('Optional IANA timezone string (e.g. "America/New_York")'),
-  })
-  .superRefine((val, ctx) => {
+});
+
+const inputSchema = inputObject.superRefine((val, ctx) => {
     if (val.scheduleType === 'delay' && val.delayMinutes === undefined) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -120,9 +120,18 @@ export function registerCreateScheduledWorkflow(server: McpServer) {
     {
       description:
         'Schedule an automated action for an incident (e.g. post a summary to Slack). Supports delay (minutes from now), specific_time (ISO 8601), or recurring (interval + end time). Post actions require targetSlackChannelId and targetSlackTeamId.',
-      inputSchema,
+      inputSchema: z.object(inputObject.shape),
     },
-    async (input) => {
+    async (raw) => {
+      const parsed = inputSchema.safeParse(raw);
+      if (!parsed.success) {
+        const message = parsed.error.issues.map((issue) => issue.message).join('; ');
+        return {
+          content: [{ type: 'text' as const, text: `Error creating scheduled workflow: ${message}` }],
+          isError: true,
+        };
+      }
+      const input = parsed.data;
       try {
         const body: JsonObject = {
           scheduleType: input.scheduleType,

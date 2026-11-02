@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { callPublicApi, downloadFileFromPublicApi, uploadFilesToPublicApi } from '../../client';
 import type { JsonValue } from '../../types';
@@ -103,7 +103,7 @@ async function runApiTool(def: ApiToolDefinition, input: Record<string, unknown>
 }
 
 function inputSchemaOf(def: ApiToolDefinition): z.ZodRawShape {
-  const shape: z.ZodRawShape = { ...(def.input ?? {}) };
+  const shape: Record<string, z.core.$ZodType> = { ...(def.input ?? {}) };
   for (const name of placeholders(def.path)) {
     shape[name] ??= z.string().min(1).describe(`${name} path parameter`);
   }
@@ -131,7 +131,7 @@ type RegisterLooseTool = (
   name: string,
   config: {
     description: string;
-    inputSchema: z.ZodRawShape;
+    inputSchema: z.ZodObject;
     annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean };
   },
   callback: (input: Record<string, unknown>) => Promise<ToolResult>,
@@ -143,7 +143,7 @@ export function registerApiTool(server: McpServer, def: ApiToolDefinition): void
     def.name,
     {
       description: def.description,
-      inputSchema: inputSchemaOf(def),
+      inputSchema: z.object(inputSchemaOf(def)),
       annotations: {
         readOnlyHint: def.method === 'GET',
         destructiveHint: def.method === 'DELETE',

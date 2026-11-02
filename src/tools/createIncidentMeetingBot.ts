@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -30,7 +30,7 @@ export function registerCreateIncidentMeetingBot(server: McpServer) {
           .describe(
             "Spoken language of the meeting; defaults to the tenant language. 'multi' detects mixed Japanese and English.",
           ),
-      }) as z.ZodType<Input>,
+      }),
     },
     async (input: Input) => {
       try {

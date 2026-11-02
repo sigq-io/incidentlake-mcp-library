@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import type { Toolset } from '../../toolsets';
 import { registerApiTool, type ApiToolDefinition } from './defineApiTool';
 import { adminTools } from './admin';

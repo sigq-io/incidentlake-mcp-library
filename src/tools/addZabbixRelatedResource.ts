@@ -1,4 +1,4 @@
-import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer } from "@modelcontextprotocol/server";
 import { z } from 'zod';
 import { api } from '../client';
 import { zIncludeDrills } from '../incidentZod';
@@ -24,7 +24,7 @@ export function registerAddZabbixRelatedResource(server: McpServer) {
         eventId: z.string().min(1).describe("Zabbix problem's eventid"),
         triggerId: z.string().min(1).describe("Zabbix problem's objectid (trigger id)"),
         name: z.string().optional().describe('Problem name, used as the resource title'),
-      }) as z.ZodType<AddZabbixRelatedResourceInput>,
+      }),
     },
     async (input: AddZabbixRelatedResourceInput) => {
       try {
