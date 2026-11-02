@@ -451,19 +451,6 @@ export const incidentResponseTools: ApiToolDefinition[] = [
     input: { incidentId, taskId, includeDrills },
   },
   {
-    name: 'link_related_resource_url',
-    description:
-      'Link a Jira, Notion, Datadog or Google Drive URL to an incident as a related resource (same endpoint as add_related_resource_by_url, as a declarative tool). If the URL is already linked, the existing link is returned.',
-    method: 'POST',
-    path: '/v1/incidents/{incidentId}/related-resources/url',
-    query: ['includeDrills'],
-    input: {
-      incidentId,
-      includeDrills,
-      url: z.string().min(1).describe('Jira, Notion, Datadog or Google Drive URL'),
-    },
-  },
-  {
     name: 'get_incident_rbac_tags',
     description: 'Get the RBAC (access control) tags assigned to an incident.',
     method: 'GET',

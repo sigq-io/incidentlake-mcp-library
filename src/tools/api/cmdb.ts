@@ -70,15 +70,6 @@ export const cmdbTools: ApiToolDefinition[] = [
     },
   },
   {
-    name: 'delete_service_dependency_edge',
-    description: 'Delete a CMDB dependency edge by its numeric edge ID, as returned by the dependency list tools.',
-    method: 'DELETE',
-    path: '/v1/service-dependencies/{dependencyId}',
-    input: {
-      dependencyId: z.number().int().positive().describe('Numeric dependency edge ID'),
-    },
-  },
-  {
     name: 'extract_service_dependencies',
     description:
       'Extract service dependencies from text (architecture notes, runbooks) and add them to the CMDB graph. Returns the numbers of edges created and updated. (AI; consumes credits)',

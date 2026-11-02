@@ -61,7 +61,7 @@ const proposals = z
 const snapshotRef = (what: string) =>
   z.string().min(1).describe(`${what}: a version (tag) UUID, "official" or "latest"`);
 
-export const specsSpaceTools: ApiToolDefinition[] = [
+export const specificationTools: ApiToolDefinition[] = [
   // Spaces
   {
     name: 'list_spec_spaces',
@@ -578,9 +578,6 @@ export const specsSpaceTools: ApiToolDefinition[] = [
       postId: z.string().uuid().describe('Post UUID'),
     },
   },
-];
-
-export const specsChangeTools: ApiToolDefinition[] = [
   // Change requests
   {
     name: 'list_spec_change_requests',

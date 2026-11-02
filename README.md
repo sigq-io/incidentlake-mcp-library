@@ -16,25 +16,21 @@ Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry
 
 ## Tool groups
 
-The core tools (incidents, notes, tags, checklists, severities, tasks, commanders, related resources, reports, members, CMDB services and graph, risks, integrations, response timeline, drills, knowledge) are always available. The rest of the Public API is split into groups so that MCP clients are not flooded with tools they don't need:
+The core tools stay registered no matter what: incidents, notes, tags, checklists, severities, tasks, commanders, related resources, reports, members, the CMDB service graph (`save_cmdb_graph_batch` and the service and dependency tools), risks, integrations, the response timeline, drills and knowledge. These groups only add Public API operations that had no tool yet. Group names match Incident Lake features.
 
-| Group | Default | Covers |
+| Group | Default | Adds |
 | --- | --- | --- |
-| `incident_response` | yes | AI-filled field provenance and autofill, severity detection, checklist templates and suggestions, commanders, task reports and approvals, role assignments, ITIL fields, linked changes, risks, RBAC tags, NetBox hardware |
-| `incident_chat` | yes | Incident emergency chat rooms |
-| `task_board` | yes | Task board projects, tasks, scopes, comments and the work overview |
-| `improvement` | | Improvement tasks, risk history and links, problem candidates, corrective actions |
-| `knowledge` | | Semantic search, versions, CSV import, classification, review settings |
+| `incidents` | yes | ITIL fields, AI field fill, severity detection, checklist templates, roles, task reports, linked changes, the emergency chat room |
+| `task_board` | yes | Task board projects, tasks, scopes, comments and files |
+| `problems` | | Problem candidates, risk history and links, improvement tasks |
+| `knowledge` | | Semantic search, versions, CSV import, classification, and the evidence library |
 | `changes` | | Changes, releases, deployments, GitHub sync |
-| `specs` | | Specifications: spaces, pages, drafts, threads, versions, change requests, sources, AI judgements |
-| `emergency` | | Emergency (BCP) plans, contacts, activations, AI consultations |
-| `evidence` | | Evidence library documents, pages and search |
-| `business_continuity` | | Business operations, BCP scenarios, locations |
-| `cmdb` | | Service incident counts and tags, ITIL attributes, dependency extraction, NetBox devices, service catalog |
-| `workflow` | | Workflow automation rules and runs |
-| `admin` | | Checklist and action item templates, incident roles and routing, severity criteria, RBAC rules, ITIL settings, task pings and checkpoints |
+| `specs` | | Specification spaces, pages, reviews, change requests, sources, judgements |
+| `emergency` | | Emergency plans, contacts, activations, consultations |
+| `services` | | Service incident counts, ITIL attributes, dependency extraction, NetBox, the service catalog, locations and business operations |
+| `settings` | | Workflow automations and tenant configuration (templates, roles, severity criteria, RBAC, ITIL settings) |
 
-Set `SIGQ_MCP_TOOLSETS` to a comma-separated list to choose groups: `default` expands to the default groups, `all` enables every group and `none` keeps only the core tools.
+Nothing is required. With `SIGQ_TOOLSETS` unset, the two default groups are added on top of the core tools. `all` adds every group, `none` keeps only the core tools, and `default,specs` adds one more group.
 
 ```json
 {
@@ -42,7 +38,7 @@ Set `SIGQ_MCP_TOOLSETS` to a comma-separated list to choose groups: `default` ex
     "incidentlake-mcp": {
       "command": "npx",
       "args": ["@sigq/incidentlake-mcp-library"],
-      "env": { "SIGQ_MCP_TOOLSETS": "default,specs,changes" }
+      "env": { "SIGQ_TOOLSETS": "default,specs" }
     }
   }
 }

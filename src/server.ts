@@ -15,7 +15,7 @@ export function createIncidentLakeMcpServer(options: RegisterToolsOptions = {}):
     version: '0.7.0',
   });
 
-  registerTools(server, { toolsets: parseToolsets(process.env.SIGQ_MCP_TOOLSETS), ...options });
+  registerTools(server, { toolsets: parseToolsets(process.env.SIGQ_TOOLSETS), ...options });
   registerResources(server);
 
   return server;
@@ -31,7 +31,7 @@ function toolsetsFromUrl(url: string | undefined): string | null {
  * created per request, and every Public API call the tools make while handling it uses
  * `credentials`. `parsedBody` is the JSON body when a body parser has already consumed the stream.
  * A `toolsets` query parameter on the request URL (e.g. `?toolsets=default,specs`) overrides
- * SIGQ_MCP_TOOLSETS for that client.
+ * SIGQ_TOOLSETS for that client.
  */
 export async function handleStreamableHttpRequest(
   req: IncomingMessage,

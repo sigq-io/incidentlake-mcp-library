@@ -11,25 +11,20 @@ import { improvementTools } from './improvement';
 import { incidentChatTools } from './incidentChat';
 import { incidentResponseTools } from './incidentResponse';
 import { knowledgeTools } from './knowledge';
-import { specsChangeTools } from './specsChanges';
-import { specsSpaceTools } from './specsSpaces';
+import { specificationTools } from './specifications';
 import { taskBoardTools } from './taskBoard';
 import { workflowTools } from './workflow';
 
 export const TOOLSET_TOOLS: Record<Toolset, ApiToolDefinition[]> = {
-  incident_response: incidentResponseTools,
-  incident_chat: incidentChatTools,
+  incidents: [...incidentResponseTools, ...incidentChatTools],
   task_board: taskBoardTools,
-  improvement: improvementTools,
-  knowledge: knowledgeTools,
+  problems: improvementTools,
+  knowledge: [...knowledgeTools, ...evidenceTools],
   changes: changeTools,
-  specs: [...specsSpaceTools, ...specsChangeTools],
+  specs: specificationTools,
   emergency: emergencyTools,
-  evidence: evidenceTools,
-  business_continuity: businessContinuityTools,
-  cmdb: cmdbTools,
-  workflow: workflowTools,
-  admin: adminTools,
+  services: [...cmdbTools, ...businessContinuityTools],
+  settings: [...adminTools, ...workflowTools],
 };
 
 export function registerApiTools(
