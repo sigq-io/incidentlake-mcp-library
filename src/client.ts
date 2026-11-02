@@ -1,4 +1,4 @@
-import { access, constants, mkdir, writeFile } from 'node:fs/promises';
+import { access, constants, mkdir, readFile, realpath, stat, writeFile } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path';
 import { loadConfig } from './configure';
@@ -184,8 +184,9 @@ async function apiRequest<T>(
         throw new Error(`API error ${response.status} for ${path}: ${body}`);
       }
 
-      const json = (await response.json()) as JsonValue;
-      return unwrapDataPayload<T>(json);
+      const text = await response.text();
+      if (!text) return null as T;
+      return unwrapDataPayload<T>(JSON.parse(text) as JsonValue);
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error));
       lastError = err;
@@ -1372,4 +1373,94 @@ export async function exportIncidentsToFile(
   await writeFile(finalPath, buffer);
 
   return { path: finalPath, bytes: buffer.length, contentType, format };
+}
+
+// Generic Public API access for the declarative tools in tools/api.
+
+export function callPublicApi<T = JsonValue>(
+  path: string,
+  options: RequestInit = {},
+  maxRetries: number = MAX_RETRIES,
+  timeoutMs: number = REQUEST_TIMEOUT_MS,
+): Promise<T> {
+  return apiRequest<T>(path, options, maxRetries, timeoutMs);
+}
+
+const FILE_TRANSFER_TIMEOUT_MS = 120_000;
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+
+/**
+ * Rejects local files the model should never send to the tenant even when asked to: anything
+ * under a hidden directory or itself hidden (`~/.ssh`, `.env`, `.aws/credentials`), and anything
+ * that is not a regular file. The path is resolved through symlinks first so a link cannot bypass it.
+ */
+async function assertUploadable(resolved: string): Promise<string> {
+  const real = await realpath(resolved);
+  if (real.split(/[\\/]/).some((segment) => segment.startsWith('.') && segment !== '.' && segment !== '..')) {
+    throw new Error(`Refusing to upload hidden file or directory content: ${resolved}`);
+  }
+  const info = await stat(real);
+  if (!info.isFile()) throw new Error(`Not a regular file: ${resolved}`);
+  if (info.size > MAX_UPLOAD_BYTES) {
+    throw new Error(`File is larger than ${MAX_UPLOAD_BYTES / (1024 * 1024)} MB: ${resolved}`);
+  }
+  return real;
+}
+
+/** Uploads local files as multipart/form-data. Never retried: an upload creates a new record. */
+export async function uploadFilesToPublicApi(
+  path: string,
+  method: string,
+  fileField: string,
+  filePaths: string[],
+  fields: Record<string, string>,
+): Promise<JsonValue> {
+  const { apiUrl, apiToken } = getCredentials();
+  const form = new FormData();
+  for (const filePath of filePaths) {
+    const resolved = resolveOutputPath(filePath);
+    const real = await assertUploadable(resolved);
+    form.append(fileField, new Blob([await readFile(real)]), basename(resolved));
+  }
+  for (const [key, value] of Object.entries(fields)) form.append(key, value);
+
+  const response = await fetchWithTimeout(
+    `${apiUrl}${path}`,
+    { method, headers: new Headers({ Authorization: `Bearer ${apiToken}` }), body: form },
+    FILE_TRANSFER_TIMEOUT_MS,
+  );
+  const text = await response.text();
+  if (!response.ok) throw new Error(`API error ${response.status} for ${path}: ${text}`);
+  return text ? unwrapDataPayload<JsonValue>(JSON.parse(text) as JsonValue) : null;
+}
+
+/** Downloads a file into `outputDirectory`, keeping the server's filename and never overwriting. */
+export async function downloadFileFromPublicApi(
+  path: string,
+  outputDirectory: string,
+  fallbackName: string,
+): Promise<{ path: string; bytes: number; contentType: string }> {
+  const { apiUrl, apiToken } = getCredentials();
+  const response = await fetchWithTimeout(
+    `${apiUrl}${path}`,
+    { method: 'GET', headers: new Headers({ Authorization: `Bearer ${apiToken}` }) },
+    FILE_TRANSFER_TIMEOUT_MS,
+  );
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(`API error ${response.status} for ${path}: ${body}`);
+  }
+  const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
+  const buffer = Buffer.from(await response.arrayBuffer());
+  const dir = resolveExportDirectory(outputDirectory);
+  await mkdir(dir, { recursive: true });
+  const served = parseFilenameFromDisposition(response.headers.get('content-disposition'), fallbackName);
+  // sanitizeFilename strips separators, but "." or ".." would still point outside the directory.
+  const name = served === '.' || served === '..' || served.startsWith('.') ? fallbackName : served;
+  const finalPath = await uniqueOutputPath(join(dir, name));
+  if (dirname(resolve(finalPath)) !== resolve(dir)) {
+    throw new Error(`Refusing to write outside ${dir}: ${finalPath}`);
+  }
+  await writeFile(finalPath, buffer);
+  return { path: finalPath, bytes: buffer.length, contentType };
 }

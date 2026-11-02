@@ -10,7 +10,43 @@ An [MCP (Model Context Protocol)](https://modelcontextprotocol.io) server that c
 
 Incident Lake also hosts this server over Streamable HTTP with OAuth sign-in. Open **User settings → AI tools (MCP)** in Incident Lake to get the server URL, add it to your MCP client (Claude connectors, Cursor, VS Code, Claude Code), and sign in when prompted. The rest of this README covers the local stdio server, which uses an API token instead.
 
-Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry point, which exports `handleStreamableHttpRequest(req, res, parsedBody, { apiUrl, apiToken })`. The tool that writes exports to the local disk (`export_incidents`) is not offered there.
+Hosts embedding the server use the `@sigq/incidentlake-mcp-library/server` entry point, which exports `handleStreamableHttpRequest(req, res, parsedBody, { apiUrl, apiToken })`. Tools that read or write the local disk (`export_incidents` and the file upload/download tools) are not offered there. A `toolsets` query parameter on the request URL (for example `?toolsets=default,specs`) chooses the [tool groups](#tool-groups) for that client.
+
+---
+
+## Tool groups
+
+The core tools (incidents, notes, tags, checklists, severities, tasks, commanders, related resources, reports, members, CMDB services and graph, risks, integrations, response timeline, drills, knowledge) are always available. The rest of the Public API is split into groups so that MCP clients are not flooded with tools they don't need:
+
+| Group | Default | Covers |
+| --- | --- | --- |
+| `incident_response` | yes | AI-filled field provenance and autofill, severity detection, checklist templates and suggestions, commanders, task reports and approvals, role assignments, ITIL fields, linked changes, risks, RBAC tags, NetBox hardware |
+| `incident_chat` | yes | Incident emergency chat rooms |
+| `task_board` | yes | Task board projects, tasks, scopes, comments and the work overview |
+| `improvement` | | Improvement tasks, risk history and links, problem candidates, corrective actions |
+| `knowledge` | | Semantic search, versions, CSV import, classification, review settings |
+| `changes` | | Changes, releases, deployments, GitHub sync |
+| `specs` | | Specifications: spaces, pages, drafts, threads, versions, change requests, sources, AI judgements |
+| `emergency` | | Emergency (BCP) plans, contacts, activations, AI consultations |
+| `evidence` | | Evidence library documents, pages and search |
+| `business_continuity` | | Business operations, BCP scenarios, locations |
+| `cmdb` | | Service incident counts and tags, ITIL attributes, dependency extraction, NetBox devices, service catalog |
+| `workflow` | | Workflow automation rules and runs |
+| `admin` | | Checklist and action item templates, incident roles and routing, severity criteria, RBAC rules, ITIL settings, task pings and checkpoints |
+
+Set `SIGQ_MCP_TOOLSETS` to a comma-separated list to choose groups: `default` expands to the default groups, `all` enables every group and `none` keeps only the core tools.
+
+```json
+{
+  "mcpServers": {
+    "incidentlake-mcp": {
+      "command": "npx",
+      "args": ["@sigq/incidentlake-mcp-library"],
+      "env": { "SIGQ_MCP_TOOLSETS": "default,specs,changes" }
+    }
+  }
+}
+```
 
 ---
 
@@ -97,7 +133,7 @@ Add to `~/.cursor/mcp.json` or your workspace `.cursor/mcp.json`:
 
 ## Step 3 — Restart your MCP client
 
-Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with 6 tools available.
+Restart Claude Desktop or Cursor. You should see `incidentlake-mcp` listed with its tools.
 
 ## Example Prompts
 
