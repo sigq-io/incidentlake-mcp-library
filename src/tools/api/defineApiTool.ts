@@ -102,7 +102,7 @@ async function runApiTool(def: ApiToolDefinition, input: Record<string, unknown>
   );
 }
 
-function inputSchemaOf(def: ApiToolDefinition): z.ZodObject<z.ZodRawShape> {
+function inputSchemaOf(def: ApiToolDefinition): z.ZodRawShape {
   const shape: z.ZodRawShape = { ...(def.input ?? {}) };
   for (const name of placeholders(def.path)) {
     shape[name] ??= z.string().min(1).describe(`${name} path parameter`);
@@ -118,11 +118,28 @@ function inputSchemaOf(def: ApiToolDefinition): z.ZodObject<z.ZodRawShape> {
       .optional()
       .describe('Local directory to save the file in (default ~/Downloads). Existing files are never overwritten.');
   }
-  return z.object(shape);
+  return shape;
 }
 
+type ToolResult = { content: { type: 'text'; text: string }[]; isError?: boolean };
+
+/**
+ * registerTool infers the callback argument from inputSchema. A non-literal Zod shape makes that
+ * inference hit TS2589 and exhaust memory, so this one call site is typed loosely.
+ */
+type RegisterLooseTool = (
+  name: string,
+  config: {
+    description: string;
+    inputSchema: z.ZodRawShape;
+    annotations: { readOnlyHint: boolean; destructiveHint: boolean; idempotentHint: boolean };
+  },
+  callback: (input: Record<string, unknown>) => Promise<ToolResult>,
+) => void;
+
 export function registerApiTool(server: McpServer, def: ApiToolDefinition): void {
-  server.registerTool(
+  const registerTool = server.registerTool.bind(server) as unknown as RegisterLooseTool;
+  registerTool(
     def.name,
     {
       description: def.description,
@@ -135,7 +152,7 @@ export function registerApiTool(server: McpServer, def: ApiToolDefinition): void
     },
     async (input) => {
       try {
-        const data = await runApiTool(def, input as Record<string, unknown>);
+        const data = await runApiTool(def, input);
         return { content: [{ type: 'text' as const, text: JSON.stringify(data ?? { ok: true }, null, 2) }] };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';

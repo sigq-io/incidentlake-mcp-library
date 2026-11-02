@@ -64,6 +64,7 @@ export const evidenceTools: ApiToolDefinition[] = [
       pdfTitle: z.string().max(500).optional().describe('Title from the PDF properties'),
       pdfAuthor: z.string().max(500).optional().describe('Author from the PDF properties'),
       pdfSubject: z.string().max(500).optional().describe('Subject from the PDF properties'),
+      // The endpoint is multipart-first and reads `pages` only as a JSON-encoded string.
       pages: z
         .array(z.string())
         .max(5)

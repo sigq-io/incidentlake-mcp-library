@@ -1387,7 +1387,8 @@ export function callPublicApi<T = JsonValue>(
 }
 
 const FILE_TRANSFER_TIMEOUT_MS = 120_000;
-const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+/** The largest file any upload endpoint accepts (evidence PDFs); the API enforces the per-endpoint limit. */
+const MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
 /**
  * Rejects local files the model should never send to the tenant even when asked to: anything
